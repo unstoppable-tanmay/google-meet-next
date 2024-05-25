@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto, Inter } from "next/font/google";
 import "./globals.css";
+import RecoidContextProvider from "@/state/recoilContextProvider";
 
 const roboto = Roboto({
   weight: ["100", "300", "400", "500", "700", "900"],
@@ -21,7 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <RecoidContextProvider>{children}</RecoidContextProvider>
+      </body>
     </html>
   );
 }

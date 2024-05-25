@@ -10,7 +10,7 @@ const Home = () => {
   const [roomId, setRoomId] = useState("");
   return (
     <section className="w-full flex flex-col lg:flex-row items-center justify-between px-5 md:px-[5%] gap-20 flex-1">
-      <div className="left flex gap-4 flex-col h-full text-center md:text-left">
+      <div className="left flex gap-4 flex-col h-full text-center md:text-left py-28 md:py-0">
         <div className="heading text-[clamp(43px,2.1vw,100px)] leading-[1.2] font-sans">
           Video calls and meetings for <br /> everyone
         </div>

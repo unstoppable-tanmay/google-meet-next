@@ -2,15 +2,20 @@
 
 /* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from "react";
+import { useRecoilState } from "recoil";
+
 import Icon from "./common/Icon";
+
 import { FaRegCircleQuestion } from "react-icons/fa6";
-import { BiCog } from "react-icons/bi";
-import { CgMenuGridO } from "react-icons/cg";
-import { GoReport } from "react-icons/go";
 import { TbMessageReport } from "react-icons/tb";
+import { CgMenuGridO } from "react-icons/cg";
+import { BiCog } from "react-icons/bi";
+
+import { settingsState } from "@/state/atom";
 
 const Nav = () => {
   const [time, setTime] = useState("");
+  const [openSettings, setOpenSettings] = useRecoilState(settingsState);
 
   useEffect(() => {
     setTime(
@@ -58,14 +63,18 @@ const Nav = () => {
         <Icon className="text-2xl hidden md:flex">
           <TbMessageReport />
         </Icon>
-        <Icon className="text-2xl">
+        <Icon className="text-2xl" onClick={(e) => setOpenSettings(true)}>
           <BiCog />
         </Icon>
         <Icon className="text-2xl md:ml-5">
           <CgMenuGridO />
         </Icon>
         <div className="avtar p-1 md:p-1.5 hover:bg-black/5 rounded-full">
-            <img src="/avtar.avif" alt="" className="min-w-8 w-8 aspect-square rounded-full object-cover" />
+          <img
+            src="/avtar.avif"
+            alt=""
+            className="min-w-8 w-8 aspect-square rounded-full object-cover"
+          />
         </div>
       </div>
     </nav>
