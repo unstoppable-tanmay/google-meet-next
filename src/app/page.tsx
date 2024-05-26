@@ -1,7 +1,6 @@
 import Home from "@/components/Home";
 import Nav from "@/components/Nav";
 import Settings from "@/components/common/Settings";
-import Image from "next/image";
 
 export default function Page() {
   return (
