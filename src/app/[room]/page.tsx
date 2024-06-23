@@ -4,6 +4,7 @@ import JoinRoom from "@/components/room/JoinRoom";
 import JoinedRoom from "@/components/room/JoinedRoom";
 import { generateRoomId, isValidRoomId } from "@/lib/room-id";
 import { joined } from "@/state/atom";
+import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
@@ -14,6 +15,7 @@ const Page = ({ params }: { params: { room: string } }) => {
 
   const [pageLoading, setPageLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState("Loading...");
+  const [pageTransition, setPageTransition] = useState(false);
 
   const [join, setJoin] = useRecoilState(joined);
 
@@ -38,7 +40,7 @@ const Page = ({ params }: { params: { room: string } }) => {
   ) : join ? (
     <JoinedRoom />
   ) : (
-    <JoinRoom setJoin={setJoin} />
+    <JoinRoom />
   );
 };
 

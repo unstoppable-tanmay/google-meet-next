@@ -12,10 +12,14 @@ import { CgMenuGridO } from "react-icons/cg";
 import { BiCog } from "react-icons/bi";
 
 import { settingsState } from "@/state/atom";
+import { signIn, useSession } from "next-auth/react";
+import { Popover, PopoverContent, PopoverTrigger } from "@nextui-org/popover";
 
 const Nav = () => {
   const [time, setTime] = useState("");
   const [openSettings, setOpenSettings] = useRecoilState(settingsState);
+
+  const session = useSession();
 
   useEffect(() => {
     setTime(
@@ -45,7 +49,7 @@ const Nav = () => {
             month: "short",
           })
       );
-    }, 6000);
+    }, 60000);
   }, []);
   return (
     <nav className="flex w-full justify-between items-center px-3 md:px-5 gap-4 select-none py-2.5 text-black/60">
@@ -53,30 +57,53 @@ const Nav = () => {
         <img src="/logo.svg" alt="" className="logo max-h-8 md:max-h-10" />
         {/* <span className="text-[22px] font-sans">Meet</span> */}
       </div>
-      <div className="right flex gap-1 items-center bg-white">
-        <div className="time font-sans hidden md:flex font-medium text-black/60 mr-1">
-          {time}
+      {session.status == "authenticated" ? (
+        <div className="right flex gap-1 items-center bg-white">
+          <div className="time font-sans hidden md:flex font-medium text-black/60 mr-1">
+            {time}
+          </div>
+          <Icon className="text-xl hidden md:flex">
+            <FaRegCircleQuestion />
+          </Icon>
+          <Icon className="text-2xl hidden md:flex">
+            <TbMessageReport />
+          </Icon>
+          <Icon className="text-2xl" onClick={(e) => setOpenSettings(true)}>
+            <BiCog />
+          </Icon>
+          <Icon className="text-2xl md:ml-5">
+            <CgMenuGridO />
+          </Icon>
+          <Popover placement="bottom-end">
+            <PopoverTrigger>
+              <div className="avtar p-1 md:p-1.5 hover:bg-black/5 rounded-full">
+                <img
+                  src={session.data.user?.image || "/avtar.avif"}
+                  alt=""
+                  className="min-w-8 w-8 aspect-square rounded-full object-cover"
+                />
+              </div>
+            </PopoverTrigger>
+            <PopoverContent>
+              <div className="flex flex-col gap-1 p-2">
+                <div className="name font-medium">
+                  {session.data.user?.name}
+                </div>
+                <div className="email text-sm">{session.data.user?.email}</div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
-        <Icon className="text-xl hidden md:flex">
-          <FaRegCircleQuestion />
-        </Icon>
-        <Icon className="text-2xl hidden md:flex">
-          <TbMessageReport />
-        </Icon>
-        <Icon className="text-2xl" onClick={(e) => setOpenSettings(true)}>
-          <BiCog />
-        </Icon>
-        <Icon className="text-2xl md:ml-5">
-          <CgMenuGridO />
-        </Icon>
-        <div className="avtar p-1 md:p-1.5 hover:bg-black/5 rounded-full">
-          <img
-            src="/avtar.avif"
-            alt=""
-            className="min-w-8 w-8 aspect-square rounded-full object-cover"
-          />
-        </div>
-      </div>
+      ) : (
+        <>
+          <div
+            className="signinbutton font-medium text-blue-400 hover:text-blue-500 cursor-pointer"
+            onClick={(e) => signIn("google", { redirect: false })}
+          >
+            Sign In
+          </div>
+        </>
+      )}
     </nav>
   );
 };

@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Carousel from "./common/Carousel";
-import OutsideClickDetector from "./common/OutsideClickDetector";
 
 import { MdKeyboard, MdOutlineCalendarToday } from "react-icons/md";
 import { BiVideoPlus } from "react-icons/bi";
@@ -20,7 +19,6 @@ import { useRouter } from "next/navigation";
 const Home = () => {
   const [focus, setFocus] = useState(false);
   const [roomId, setRoomId] = useState("");
-  const [openNewMeet, setOpenNewMeet] = useState(false);
   const [open, setOpen] = useRecoilState(settingsState);
 
   const router = useRouter();
@@ -47,7 +45,6 @@ const Home = () => {
               <PopoverTrigger>
                 <div
                   className="startbtn py-3 px-3 flex-shrink-0 rounded-[4px] bg-[#1a6dde]/95 hover:bg-[#1a6dde] text-white flex gap-1 items-center justify-center cursor-pointer relative select-none "
-                  onClick={(e) => setOpenNewMeet(true)}
                 >
                   <BiVideoPlus className="text-xl font-bold flex-shrink-0" />
                   <span className=" font-medium flex-shrink-0">

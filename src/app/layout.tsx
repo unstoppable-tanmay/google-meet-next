@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto, Inter } from "next/font/google";
 import "./globals.css";
-
-import RecoilContextProvider from "@/state/recoilContextProvider";
-import { NextUIProvider } from "@nextui-org/react";
+import Providers from "@/provider/Providers";
 
 const roboto = Roboto({
   weight: ["100", "300", "400", "500", "700", "900"],
@@ -28,9 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <RecoilContextProvider>
-          <NextUIProvider>{children}</NextUIProvider>
-        </RecoilContextProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -1,7 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 
 import Sound from "../common/Sound";
+import Button from "../common/Button";
+
+import { Popover, PopoverTrigger, PopoverContent } from "@nextui-org/react";
+
+import { useRecoilState } from "recoil";
+import { joined, mediaDevices, settings } from "@/state/atom";
 
 import {
   MdOutlineArrowDropDown,
@@ -9,21 +15,17 @@ import {
   MdOutlinePresentToAll,
 } from "react-icons/md";
 import { HiDotsVertical } from "react-icons/hi";
-
-import { SetterOrUpdater, useRecoilState } from "recoil";
-import { mediaDevices, settings } from "@/state/atom";
-import Button from "../common/Button";
 import { FiMic, FiMicOff } from "react-icons/fi";
 import { BiVideo, BiVideoOff } from "react-icons/bi";
 import { WiStars } from "react-icons/wi";
 import { PiSpeakerHighBold } from "react-icons/pi";
-import { Popover, PopoverTrigger, PopoverContent } from "@nextui-org/react";
 
-const JoinRoom = ({ setJoin }: { setJoin: SetterOrUpdater<boolean> }) => {
+const JoinRoom = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [setting, setSettings] = useRecoilState(settings);
   const [mediaDevice, setMediaDevices] = useRecoilState(mediaDevices);
+  const [join, setJoin] = useRecoilState(joined);
 
   // Get Devices
   useEffect(() => {
@@ -38,6 +40,7 @@ const JoinRoom = ({ setJoin }: { setJoin: SetterOrUpdater<boolean> }) => {
         microphone: micDevices.map((e) => ({ value: e, label: e.label })),
         speaker: speakerDevices.map((e) => ({ value: e, label: e.label })),
         camera: cameraDevices.map((e) => ({ value: e, label: e.label })),
+        screen: [],
       });
 
       setSettings((prev) => ({
@@ -259,12 +262,12 @@ const JoinRoom = ({ setJoin }: { setJoin: SetterOrUpdater<boolean> }) => {
           </div>
           <div className="buttons flex gap-2 items-center text-sm font-medium mb-10">
             <div
-              className="joinnow px-6 py-3.5 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600"
+              className="joinnow cursor-pointer px-6 py-3.5 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600"
               onClick={(e) => setJoin(true)}
             >
               Join now
             </div>
-            <div className="joinnow px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md hover:bg-[#f6fafe]">
+            <div className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md hover:bg-[#f6fafe]">
               <MdOutlinePresentToAll className="text-2xl" />
               Present
             </div>
@@ -272,7 +275,7 @@ const JoinRoom = ({ setJoin }: { setJoin: SetterOrUpdater<boolean> }) => {
           <div className="desc text-sm font-semibold text-black/60 mb-5">
             Other joining options
           </div>
-          <div className="joiningOpt text-blue-500 text-sm flex items-center gap-2">
+          <div className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2">
             <MdOutlinePhonelink className="text-2xl" />
             Use Companion Mode
           </div>
