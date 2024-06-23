@@ -1,0 +1,229 @@
+"use client";
+
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useRecoilState } from "recoil";
+import Select from "react-select";
+
+import Icon from "../Icon";
+
+import { BiVideo } from "react-icons/bi";
+import { HiOutlineCog } from "react-icons/hi";
+import { MdOutlineSpeaker } from "react-icons/md";
+import { IoCloseOutline } from "react-icons/io5";
+
+import { mediaDevices, settings, settingsState } from "@/state/atom";
+import Sound from "../Sound";
+import Audio from "./Tabs/Audio";
+import Video from "./Tabs/Video";
+
+const Settings = () => {
+  const [tab, setTab] = useState(0);
+
+  const [open, setOpen] = useRecoilState(settingsState);
+  const [setting, setSettings] = useRecoilState(settings);
+  const [mediaDevice, setMediaDevices] = useRecoilState(mediaDevices);
+
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const speakerRef = useRef<HTMLAudioElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // // Get Devices
+  // useEffect(() => {
+  //   const getDevices = async () => {
+  //     const devices = await navigator.mediaDevices.enumerateDevices();
+
+  //     const micDevices = devices.filter((e) => e.kind == "audioinput");
+  //     const speakerDevices = devices.filter((e) => e.kind == "audiooutput");
+  //     const cameraDevices = devices.filter((e) => e.kind == "videoinput");
+
+  //     setMediaDevices({
+  //       microphone: micDevices.map((e) => ({ value: e, label: e.label })),
+  //       speaker: speakerDevices.map((e) => ({ value: e, label: e.label })),
+  //       camera: cameraDevices.map((e) => ({ value: e, label: e.label })),
+  //     });
+
+  //     setSettings((prev) => ({
+  //       ...prev,
+  //       microphone: micDevices[0],
+  //       speaker: speakerDevices[0],
+  //       camera: cameraDevices[0],
+  //     }));
+  //   };
+  //   getDevices();
+  // }, [open, setMediaDevices, setSettings]);
+
+  // // Add Camera
+  // useEffect(() => {
+  //   const videoElement = videoRef.current;
+
+  //   const addVideo = async () => {
+  //     if (videoRef === null || setting.camera?.deviceId === undefined) return;
+
+  //     if (!open) {
+  //       if (videoElement && videoElement.srcObject) {
+  //         const stream = videoElement.srcObject as MediaStream;
+  //         stream.getTracks().forEach((track) => track.stop());
+  //       }
+  //       return;
+  //     }
+
+  //     try {
+  //       const stream = await navigator.mediaDevices.getUserMedia({
+  //         video: { deviceId: setting.camera?.deviceId },
+  //       });
+  //       setVideoStream(stream);
+  //       if (videoElement!.srcObject !== stream) {
+  //         videoElement!.srcObject = stream;
+  //       }
+  //     } catch (error) {
+  //       console.error("Error accessing video stream:", error);
+  //     }
+  //   };
+  //   addVideo();
+
+  //   return () => {
+  //     if (videoElement && videoElement.srcObject) {
+  //       const stream = videoElement.srcObject as MediaStream;
+  //       stream.getTracks().forEach((track) => track.stop());
+  //     }
+  //   };
+  // }, [setting.camera, open]);
+
+  // // Add Audio
+  // useEffect(() => {
+  //   const audioElement = audioRef.current;
+
+  //   const addAudio = async () => {
+  //     if (audioRef === null || setting.microphone?.deviceId === undefined)
+  //       return;
+
+  //     if (!open) {
+  //       if (audioElement && audioElement.srcObject) {
+  //         const stream = audioElement.srcObject as MediaStream;
+  //         stream.getTracks().forEach((track) => track.stop());
+  //       }
+  //       return;
+  //     }
+
+  //     try {
+  //       const stream = await navigator.mediaDevices.getUserMedia({
+  //         audio: { deviceId: setting.microphone?.deviceId },
+  //       });
+  //       if (audioElement!.srcObject !== stream) {
+  //         audioElement!.srcObject = stream;
+  //       }
+  //     } catch (error) {
+  //       console.error("Error accessing audio stream:", error);
+  //     }
+  //   };
+  //   addAudio();
+
+  //   return () => {
+  //     if (audioElement && audioElement.srcObject) {
+  //       const stream = audioElement.srcObject as MediaStream;
+  //       stream.getTracks().forEach((track) => track.stop());
+  //     }
+  //   };
+  // }, [setting.microphone, open]);
+
+  // const handlePause = () => {
+  //   if (videoRef && videoRef.current!.srcObject) {
+  //     const stream = videoRef.current!.srcObject as MediaStream;
+  //     stream.getTracks().forEach((track) => track.stop());
+  //   }
+  // };
+
+  useEffect(() => {
+    if (!document) return;
+    if (open) {
+      document.body.style.height = "100vh";
+      document.body.style.overflowY = "hidden";
+    } else {
+      document.body.style.height = "auto";
+      document.body.style.overflowY = "scroll";
+    }
+  }, [open]);
+
+  return (
+    <section
+      className="w-screen h-screen absolute flex items-center justify-center bg-black/25 z-[500]"
+      style={{
+        background: open ? "rgba(0,0,0,0.25)" : "transparent",
+        pointerEvents: open ? "all" : "none",
+      }}
+    >
+      {open && (
+        <div
+          className="outer absolute w-full h-full z-[600]"
+          onClick={(e) => setOpen(false)}
+        ></div>
+      )}
+      {open ? (
+        <div className="wrapper w-[clamp(200px,85%,800px)]  h-[92vh] rounded-md bg-white flex z-[700]">
+          <div className="menu flex flex-col w-[clamp(50px,260px,300px)]">
+            <div className="heading text-xl p-6 hidden md:flex">Settings</div>
+            <div className="menu flex flex-col mt-10 md:mt-2 pr-2 font-medium text-black/50 text-[13px]">
+              <div
+                className={`item px-4 md:px-6 flex gap-2 items-center w-full rounded-r-full py-3 ${
+                  tab == 0
+                    ? "bg-[#e0ebfc]/90 text-[#174fa7]"
+                    : "hover:bg-black/5"
+                }`}
+                onClick={(e) => setTab(0)}
+              >
+                <MdOutlineSpeaker className="text-2xl" />
+                <span className="hidden md:flex">Audio</span>
+              </div>
+              <div
+                className={`audio px-4 md:px-6 flex gap-2 items-center w-full rounded-r-full py-3 ${
+                  tab == 1
+                    ? "bg-[#e0ebfc]/90 text-[#174fa7]"
+                    : "hover:bg-black/5"
+                }`}
+                onClick={(e) => setTab(1)}
+              >
+                <BiVideo className="text-2xl" />
+                <span className="hidden md:flex">Video</span>
+              </div>
+              <div
+                className={`audio px-4 md:px-6 flex gap-2 items-center w-full rounded-r-full py-3 ${
+                  tab == 2
+                    ? "bg-[#e0ebfc]/90 text-[#174fa7]"
+                    : "hover:bg-black/5"
+                }`}
+                onClick={(e) => setTab(2)}
+              >
+                <HiOutlineCog className="text-2xl" />
+                <span className="hidden md:flex">General</span>
+              </div>
+            </div>
+          </div>
+          <div className="devider w-[.8px] h-full bg-black/20 flex-shrink-0"></div>
+          <div className="content flex-1">
+            <div className="heading flex items-center justify-end text-2xl px-3 py-2">
+              <Icon onClick={(e) => setOpen(false)}>
+                <IoCloseOutline />
+              </Icon>
+            </div>
+            <div className="settings flex flex-col flex-1 gap-5 p-6 pr-12">
+              {tab === 0 ? (
+                <Audio />
+              ) : tab === 1 ? (
+                <Video />
+              ) : (
+                <div className="item flex flex-col gap-1"></div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        false
+      )}
+    </section>
+  );
+};
+
+export default Settings;

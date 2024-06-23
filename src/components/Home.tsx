@@ -57,19 +57,19 @@ const Home = () => {
               </PopoverTrigger>
               <PopoverContent className="shadow-lg max-h-[50vh] rounded-md bg-white z-[1100] flex flex-col overflow-y-scroll no-scrollbar px-0">
                 <>
-                  <div className="item w-full flex flex-shrink-0 items-center py-3 px-4 gap-8 text-black hover:bg-black/10">
+                  <div className="item w-full cursor-pointer flex flex-shrink-0 items-center py-3 px-4 gap-8 text-black hover:bg-black/10">
                     <IoMdLink className="text-xl flex-shrink-0" />
                     <span className="flex-shrink-0">
                       Create a meeting for later
                     </span>
                   </div>
-                  <div className="item w-full flex flex-shrink-0 items-center py-3 px-4 gap-8 text-black hover:bg-black/10">
+                  <div className="item w-full cursor-pointer flex flex-shrink-0 items-center py-3 px-4 gap-8 text-black hover:bg-black/10">
                     <FaPlus className="text-xl flex-shrink-0" />
                     <span className="flex-shrink-0">
                       Start a instant meeting
                     </span>
                   </div>
-                  <div className="item w-full flex flex-shrink-0 items-center py-3 px-4 gap-8 text-black hover:bg-black/10">
+                  <div className="item w-full cursor-pointer flex flex-shrink-0 items-center py-3 px-4 gap-8 text-black hover:bg-black/10">
                     <MdOutlineCalendarToday className="text-xl flex-shrink-0" />
                     <span className="flex-shrink-0">Schedule in Calander</span>
                   </div>
@@ -101,8 +101,13 @@ const Home = () => {
                 disabled={isValidRoomId(roomId) ? false : true}
                 onClick={(e) => {
                   console.log(roomId);
-                  if (isLinkOrCode(roomId) == "code") router.push("/" + roomId);
-                  else if (isLinkOrCode(roomId) == "link") router.push(roomId);
+                  if (isLinkOrCode(roomId) == "code") {
+                    setRoomId("");
+                    router.push("/" + roomId);
+                  } else if (isLinkOrCode(roomId) == "link") {
+                    setRoomId("");
+                    router.push(roomId);
+                  }
                 }}
               >
                 Join
