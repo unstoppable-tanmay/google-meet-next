@@ -2,7 +2,7 @@
 
 import { RecoilRoot } from "recoil";
 
-export default function RecoidContextProvider({
+export default function RecoilContextProvider({
   children,
 }: {
   children: React.ReactNode;

@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
 import { Roboto, Inter } from "next/font/google";
 import "./globals.css";
-import RecoidContextProvider from "@/state/recoilContextProvider";
+
+import RecoilContextProvider from "@/state/recoilContextProvider";
+import { NextUIProvider } from "@nextui-org/react";
 
 const roboto = Roboto({
   weight: ["100", "300", "400", "500", "700", "900"],
-  subsets: ["latin"],
   variable: "--font-roboto",
+  subsets: ["greek"],
 });
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({
+  subsets: ["greek"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "Google Meet",
@@ -23,7 +28,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <RecoidContextProvider>{children}</RecoidContextProvider>
+        <RecoilContextProvider>
+          <NextUIProvider>{children}</NextUIProvider>
+        </RecoilContextProvider>
       </body>
     </html>
   );

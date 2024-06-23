@@ -50,8 +50,8 @@ const Nav = () => {
   return (
     <nav className="flex w-full justify-between items-center px-3 md:px-5 gap-4 select-none py-2.5 text-black/60">
       <div className="logo flex items-center gap-1 flex-shrink-0">
-        <img src="/logo.png" alt="" className="logo max-h-8 md:max-h-10" />
-        <span className="text-[22px] font-sans">Meet</span>
+        <img src="/logo.svg" alt="" className="logo max-h-8 md:max-h-10" />
+        {/* <span className="text-[22px] font-sans">Meet</span> */}
       </div>
       <div className="right flex gap-1 items-center bg-white">
         <div className="time font-sans hidden md:flex font-medium text-black/60 mr-1">

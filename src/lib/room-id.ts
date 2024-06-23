@@ -10,6 +10,25 @@ export function generateRoomId(): string {
 
 // Function to check if a string follows the Google Meet link format
 export function isValidRoomId(link: string): boolean {
-  const pattern = /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
-  return pattern.test(link);
+  const roomIdPattern = /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
+
+  if (link.match(roomIdPattern)) return true;
+
+  const pattern =
+    /(https?:\/\/)?(?:www\.|(?!www))localhost:3000\/[a-z]{3}-[a-z]{4}-[a-z]{3}/;
+  if (link.match(pattern)) return true;
+
+  return false;
+}
+
+export function isLinkOrCode(text: string): "link" | "code" | false {
+  const roomIdPattern = /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
+
+  if (text.match(roomIdPattern)) return "code";
+
+  const pattern =
+    /(https?:\/\/)?(?:www\.|(?!www))localhost:3000\/[a-z]{3}-[a-z]{4}-[a-z]{3}/;
+  if (text.match(pattern)) return "link";
+
+  return false;
 }

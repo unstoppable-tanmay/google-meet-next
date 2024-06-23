@@ -1,13 +1,12 @@
+// 'use client'
+
 import Home from "@/components/Home";
-import Nav from "@/components/Nav";
-import Settings from "@/components/common/Settings";
+import Head from "next/head";
 
 export default function Page() {
   return (
-    <main className="min-h-screen flex flex-col relative">
-      <Nav />
+    <main className="min-h-screen flex flex-col relative no-scrollbar">
       <Home />
-      <Settings/>
     </main>
   );
 }
