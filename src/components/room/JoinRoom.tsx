@@ -19,6 +19,10 @@ import { FiMic, FiMicOff } from "react-icons/fi";
 import { BiVideo, BiVideoOff } from "react-icons/bi";
 import { WiStars } from "react-icons/wi";
 import { PiSpeakerHighBold } from "react-icons/pi";
+import { motion } from "framer-motion";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import User from "../common/User";
 
 const JoinRoom = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -26,6 +30,13 @@ const JoinRoom = () => {
   const [setting, setSettings] = useRecoilState(settings);
   const [mediaDevice, setMediaDevices] = useRecoilState(mediaDevices);
   const [join, setJoin] = useRecoilState(joined);
+
+  const session = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session.status == "unauthenticated") router.replace("/");
+  }, [session, router]);
 
   // Get Devices
   useEffect(() => {
@@ -90,26 +101,28 @@ const JoinRoom = () => {
   }, [setting.cameraState, setting.camera]);
 
   return (
-    <section className="w-full min-h-screen flex flex-col gap-6 items-center">
+    <motion.section
+      exit={{ transition: { duration: 1 } }}
+      className="w-full min-h-screen flex flex-col gap-6 items-center"
+    >
       <nav className="flex justify-between px-4 items-center w-full py-3">
         <div className="logo flex items-center gap-1 flex-shrink-0">
           <img src="/logo.svg" alt="" className="logo max-h-8 md:max-h-10" />
         </div>
-        <div className="account flex gap-2 items-center">
-          <div className="text flex-col text-black/70 text-sm hidden md:flex items-end">
-            <div className="email">tanmaypanda752@gmail.com</div>
-            <div className="switchacc hover:text-blue-500 text-xs cursor-pointer font-medium">
-              Switch Account
+        {session.status == "authenticated" && (
+          <div className="account flex gap-2 items-center">
+            <div className="text flex-col text-black/70 text-sm hidden md:flex items-end gap-1">
+              <div className="email">{session.data?.user?.email}</div>
+              <button
+                onClick={(e) => signIn("google")}
+                className="switchacc text-blue-300 hover:text-blue-500 text-xs cursor-pointer font-semibold"
+              >
+                Switch Account
+              </button>
             </div>
+            <User user={session.data.user} />
           </div>
-          <div className="avtar p-1 md:p-1.5 hover:bg-black/5 rounded-full">
-            <img
-              src="/avtar.avif"
-              alt=""
-              className="min-w-8 w-8 aspect-square rounded-full object-cover"
-            />
-          </div>
-        </div>
+        )}
       </nav>
       <div className="content flex-1 flex items-center justify-center xl:justify-between flex-col xl:flex-row gap-10 xl:gap-6 xl:w-[80%] xl:-mt-20">
         <div className="videoWraper w-[clamp(150px,750px,90vw)]">
@@ -262,12 +275,12 @@ const JoinRoom = () => {
           </div>
           <div className="buttons flex gap-2 items-center text-sm font-medium mb-10">
             <div
-              className="joinnow cursor-pointer px-6 py-3.5 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600"
-              onClick={(e) => setJoin(true)}
+              className="joinnow cursor-pointer px-6 py-3.5 rounded-full duration-200 bg-blue-500 text-white shadow-lg hover:bg-blue-600"
+              onClick={(e) => setJoin("joined")}
             >
               Join now
             </div>
-            <div className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md hover:bg-[#f6fafe]">
+            <div className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]">
               <MdOutlinePresentToAll className="text-2xl" />
               Present
             </div>
@@ -281,7 +294,7 @@ const JoinRoom = () => {
           </div>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 

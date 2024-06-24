@@ -4,11 +4,11 @@ import { motion } from "framer-motion";
 const Icon = ({
   children,
   className,
-  onClick
+  onClick,
 }: {
   children: ReactNode;
   className?: string;
-  onClick?: (e:React.MouseEvent<HTMLDivElement, MouseEvent>)=>void
+  onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }) => {
   return (
     <motion.div
@@ -20,7 +20,6 @@ const Icon = ({
       onClick={onClick}
     >
       <motion.div
-        onClick={(e) => console.log("first")}
         className="ripple absolute w-full h-full bg-black/20 z-100 rounded-full"
         initial={{ scale: 1, opacity: 0 }}
         whileTap={{

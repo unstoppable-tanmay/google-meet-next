@@ -1,0 +1,5 @@
+export type UserType = {
+  image?: string | undefined | null;
+  name?: string | undefined | null;
+  email?: string | undefined | null;
+} | undefined;

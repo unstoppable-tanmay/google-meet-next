@@ -21,6 +21,7 @@ const Video = () => {
         microphone: micDevices.map((e) => ({ value: e, label: e.label })),
         speaker: speakerDevices.map((e) => ({ value: e, label: e.label })),
         camera: cameraDevices.map((e) => ({ value: e, label: e.label })),
+        screen: [],
       });
 
       setSettings((prev) => ({
@@ -62,6 +63,7 @@ const Video = () => {
     addVideo();
 
     return () => {
+      console.log("return video")
       if (videoElement && videoElement.srcObject) {
         const stream = videoElement.srcObject as MediaStream;
         stream.getTracks().forEach((track) => track.stop());

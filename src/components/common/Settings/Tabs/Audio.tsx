@@ -8,7 +8,7 @@ const Audio = () => {
   const [setting, setSettings] = useRecoilState(settings);
   const [mediaDevice, setMediaDevices] = useRecoilState(mediaDevices);
   const audioRef = useRef<HTMLAudioElement>(null);
-  
+
   // Get Devices
   useEffect(() => {
     const getDevices = async () => {
@@ -22,6 +22,7 @@ const Audio = () => {
         microphone: micDevices.map((e) => ({ value: e, label: e.label })),
         speaker: speakerDevices.map((e) => ({ value: e, label: e.label })),
         camera: cameraDevices.map((e) => ({ value: e, label: e.label })),
+        screen: [],
       });
 
       setSettings((prev) => ({
@@ -34,7 +35,6 @@ const Audio = () => {
     getDevices();
   }, [setMediaDevices, setSettings]);
 
-  
   // Add Audio
   useEffect(() => {
     const audioElement = audioRef.current;
@@ -65,12 +65,14 @@ const Audio = () => {
     addAudio();
 
     return () => {
+      console.log("return audio")
       if (audioElement && audioElement.srcObject) {
         const stream = audioElement.srcObject as MediaStream;
         stream.getTracks().forEach((track) => track.stop());
       }
     };
   }, [setting.microphone]);
+
   return (
     <>
       <div className="item flex flex-col gap-1">

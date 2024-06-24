@@ -59,7 +59,7 @@ export const mediaDevices = atom<{
   },
 });
 
-export const joined = atom<boolean>({
+export const joined = atom<"joined"|"joining"|"leaved"|"wrongcode">({
   key: "joined",
-  default: false,
+  default: "joining",
 });

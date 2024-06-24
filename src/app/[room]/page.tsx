@@ -2,7 +2,7 @@
 
 import JoinRoom from "@/components/room/JoinRoom";
 import JoinedRoom from "@/components/room/JoinedRoom";
-import { generateRoomId, isValidRoomId } from "@/lib/room-id";
+import { isValidRoomId } from "@/lib/room-id";
 import { joined } from "@/state/atom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -20,27 +20,56 @@ const Page = ({ params }: { params: { room: string } }) => {
   const [join, setJoin] = useRecoilState(joined);
 
   useEffect(() => {
-    console.log(generateRoomId());
     if (!isValidRoomId(room)) {
       setLoadingMessage("Invalid Room Code");
       router.replace("/");
     } else {
       setPageLoading(false);
     }
-
-    return () => {
-      setJoin(false);
-    };
   }, [room, router, setJoin]);
 
-  return pageLoading ? (
-    <section className="w-screen h-screen flex items-center justify-center">
-      {loadingMessage}
-    </section>
-  ) : join ? (
-    <JoinedRoom />
-  ) : (
-    <JoinRoom />
+  return (
+    <AnimatePresence mode="wait">
+      {pageLoading ? (
+        <section className="w-screen h-screen flex items-center justify-center text-xl">
+          {loadingMessage}
+        </section>
+      ) : join == "joined" ? (
+        <motion.div className="wrapper wrapper" key={"zsasdda"}>
+          <motion.div
+            exit={{ opacity: [0, 0, 0, 1, 1, 1, 1] }}
+            transition={{ duration: 2 }}
+            className="layer w-full h-full bg-black absolute pointer-events-none opacity-0 flex items-center justify-center text-3xl font-medium tracking-wide text-white z-[1000]"
+          >
+            Leaving...
+          </motion.div>
+          <JoinedRoom />
+        </motion.div>
+      ) : join == "joining" ? (
+        <motion.div className="wrapper wrapper" key={"zsda"}>
+          <motion.div
+            exit={{ opacity: [0, 0, 0, 1, 1, 1, 1] }}
+            transition={{ duration: 2 }}
+            className="layer w-full h-full bg-black absolute pointer-events-none opacity-0 flex items-center justify-center text-3xl font-medium tracking-wide text-white z-[1000]"
+          >
+            Joining...
+          </motion.div>
+          <JoinRoom />
+        </motion.div>
+      ) : join == "leaved" ? (
+        <section className="w-screen h-screen flex items-center justify-center text-xl">
+          Leaved
+        </section>
+      ) : join == "wrongcode" ? (
+        <section className="w-screen h-screen flex items-center justify-center text-xl">
+          WrongCode
+        </section>
+      ) : (
+        <section className="w-screen h-screen flex items-center justify-center text-xl">
+          Back Nothing Here
+        </section>
+      )}
+    </AnimatePresence>
   );
 };
 

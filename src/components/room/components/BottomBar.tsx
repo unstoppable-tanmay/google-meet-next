@@ -4,7 +4,7 @@ import React from "react";
 import { FiMic, FiMicOff, FiUsers } from "react-icons/fi";
 import { BiVideo, BiVideoOff } from "react-icons/bi";
 import { useRecoilState } from "recoil";
-import { settings } from "@/state/atom";
+import { joined, settings } from "@/state/atom";
 import { FaPhone, FaRegClosedCaptioning } from "react-icons/fa6";
 import SmallButtons from "@/components/common/SmallButtons";
 import {
@@ -24,6 +24,7 @@ import { HiOutlineUsers, HiUsers } from "react-icons/hi";
 
 const BottomBar = () => {
   const [setting, setSettings] = useRecoilState(settings);
+  const [join, setJoin] = useRecoilState(joined);
   return (
     <div className="wrapper flex flex-col">
       <div className="emojies"></div>
@@ -120,13 +121,9 @@ const BottomBar = () => {
             <BsThreeDotsVertical />
           </SmallButtons>
           <SmallButtons
-            on={setting.caption}
+            on
             onClick={(e) => {
-              console.log(setting.caption);
-              setSettings((prev) => ({
-                ...prev,
-                caption: !setting.caption,
-              }));
+              setJoin("leaved");
             }}
           >
             <FaPhone className="rotate-[135deg] mx-2.5" />

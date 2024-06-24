@@ -14,6 +14,7 @@ import { BiCog } from "react-icons/bi";
 import { settingsState } from "@/state/atom";
 import { signIn, useSession } from "next-auth/react";
 import { Popover, PopoverContent, PopoverTrigger } from "@nextui-org/popover";
+import User from "./common/User";
 
 const Nav = () => {
   const [time, setTime] = useState("");
@@ -74,25 +75,7 @@ const Nav = () => {
           <Icon className="text-2xl md:ml-5">
             <CgMenuGridO />
           </Icon>
-          <Popover placement="bottom-end">
-            <PopoverTrigger>
-              <div className="avtar p-1 md:p-1.5 hover:bg-black/5 rounded-full">
-                <img
-                  src={session.data.user?.image || "/avtar.avif"}
-                  alt=""
-                  className="min-w-8 w-8 aspect-square rounded-full object-cover"
-                />
-              </div>
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className="flex flex-col gap-1 p-2">
-                <div className="name font-medium">
-                  {session.data.user?.name}
-                </div>
-                <div className="email text-sm">{session.data.user?.email}</div>
-              </div>
-            </PopoverContent>
-          </Popover>
+          <User user={session.data.user} />
         </div>
       ) : (
         <>
