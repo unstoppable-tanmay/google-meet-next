@@ -37,7 +37,7 @@ const Page = ({ params }: { params: { room: string } }) => {
       ) : join == "joined" ? (
         <motion.div className="wrapper wrapper" key={"zsasdda"}>
           <motion.div
-            exit={{ opacity: [0, 0, 0, 1, 1, 1, 1] }}
+            exit={{ opacity: [0, 0.5, 0.7, 1, 1, 1] }}
             transition={{ duration: 2 }}
             className="layer w-full h-full bg-black absolute pointer-events-none opacity-0 flex items-center justify-center text-3xl font-medium tracking-wide text-white z-[1000]"
           >
@@ -59,14 +59,32 @@ const Page = ({ params }: { params: { room: string } }) => {
       ) : join == "leaved" ? (
         <section className="w-screen h-screen flex items-center justify-center text-xl">
           Leaved
+          <button
+            className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
+            onClick={(e) => setJoin("joining")}
+          >
+            Return
+          </button>
         </section>
       ) : join == "wrongcode" ? (
         <section className="w-screen h-screen flex items-center justify-center text-xl">
           WrongCode
+          <button
+            className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
+            onClick={(e) => setJoin("joining")}
+          >
+            Return
+          </button>
         </section>
       ) : (
         <section className="w-screen h-screen flex items-center justify-center text-xl">
           Back Nothing Here
+          <button
+            className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
+            onClick={(e) => setJoin("joining")}
+          >
+            Return
+          </button>
         </section>
       )}
     </AnimatePresence>

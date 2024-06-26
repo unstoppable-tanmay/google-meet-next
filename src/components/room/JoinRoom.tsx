@@ -109,19 +109,28 @@ const JoinRoom = () => {
         <div className="logo flex items-center gap-1 flex-shrink-0">
           <img src="/logo.svg" alt="" className="logo max-h-8 md:max-h-10" />
         </div>
-        {session.status == "authenticated" && (
+        {session.status == "authenticated" ? (
           <div className="account flex gap-2 items-center">
             <div className="text flex-col text-black/70 text-sm hidden md:flex items-end gap-1">
               <div className="email">{session.data?.user?.email}</div>
               <button
                 onClick={(e) => signIn("google")}
-                className="switchacc text-blue-300 hover:text-blue-500 text-xs cursor-pointer font-semibold"
+                className="switchacc text-blue-300 duration-100 hover:text-blue-500 text-xs cursor-pointer font-semibold"
               >
                 Switch Account
               </button>
             </div>
             <User user={session.data.user} />
           </div>
+        ) : session.status == "loading" ? (
+          <>...</>
+        ) : (
+          <button
+            onClick={(e) => signIn("google")}
+            className="switchacc text-blue-300 duration-100 hover:text-blue-500 text-xs cursor-pointer font-semibold"
+          >
+            Sign In
+          </button>
         )}
       </nav>
       <div className="content flex-1 flex items-center justify-center xl:justify-between flex-col xl:flex-row gap-10 xl:gap-6 xl:w-[80%] xl:-mt-20">

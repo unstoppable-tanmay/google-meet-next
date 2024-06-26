@@ -6,10 +6,10 @@ import Providers from "@/provider/Providers";
 const roboto = Roboto({
   weight: ["100", "300", "400", "500", "700", "900"],
   variable: "--font-roboto",
-  subsets: ["greek"],
+  subsets: ["greek", "vietnamese"],
 });
 const inter = Inter({
-  subsets: ["greek"],
+  subsets: ["greek", "vietnamese"],
   variable: "--font-inter",
 });
 

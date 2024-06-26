@@ -13,10 +13,6 @@ const JoinedRoom = () => {
   // Joining Logic
   useEffect(() => {
     // JoinRoom()
-
-    return () => {
-      // setJoin(false);
-    };
   }, [setJoin]);
 
   useEffect(() => {

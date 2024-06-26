@@ -1,8 +1,8 @@
 import Button from "@/components/common/Button";
-import React from "react";
+import React, { useState } from "react";
 
 import { FiMic, FiMicOff, FiUsers } from "react-icons/fi";
-import { BiVideo, BiVideoOff } from "react-icons/bi";
+import { BiMicrophone, BiMicrophoneOff, BiVideo, BiVideoOff } from "react-icons/bi";
 import { useRecoilState } from "recoil";
 import { joined, settings } from "@/state/atom";
 import { FaPhone, FaRegClosedCaptioning } from "react-icons/fa6";
@@ -24,6 +24,7 @@ import { HiOutlineUsers, HiUsers } from "react-icons/hi";
 
 const BottomBar = () => {
   const [setting, setSettings] = useRecoilState(settings);
+  const [raiseHand, setRaiseHand] = useState(false);
   const [join, setJoin] = useRecoilState(joined);
   return (
     <div className="wrapper flex flex-col">
@@ -44,7 +45,7 @@ const BottomBar = () => {
             }}
             open
           >
-            {setting.microphoneState ? <FiMic /> : <FiMicOff />}
+            {setting.microphoneState ? <BiMicrophone /> : <BiMicrophoneOff />}
           </SmallButtons>
           <SmallButtons
             on={setting.cameraState}
@@ -61,6 +62,7 @@ const BottomBar = () => {
           </SmallButtons>
           <SmallButtons
             on={setting.caption}
+            onColor="#2563eb"
             onClick={(e) => {
               console.log(setting.caption);
               setSettings((prev) => ({
@@ -72,24 +74,26 @@ const BottomBar = () => {
             <FaRegClosedCaptioning />
           </SmallButtons>
           <SmallButtons
-            on={setting.caption}
+            on={setting.emojies}
+            onColor="#2563eb"
             onClick={(e) => {
-              console.log(setting.caption);
+              console.log(setting.emojies);
               setSettings((prev) => ({
                 ...prev,
-                caption: !setting.caption,
+                emojies: !setting.emojies,
               }));
             }}
           >
             <MdOutlineEmojiEmotions />
           </SmallButtons>
           <SmallButtons
-            on={setting.caption}
+            on={setting.screenState}
+            onColor="#2563eb"
             onClick={(e) => {
-              console.log(setting.caption);
+              console.log(setting.screenState);
               setSettings((prev) => ({
                 ...prev,
-                caption: !setting.caption,
+                screenState: !setting.screenState,
               }));
             }}
           >
@@ -97,27 +101,13 @@ const BottomBar = () => {
             {/* <LuScreenShareOff/> */}
           </SmallButtons>
           <SmallButtons
-            on={setting.caption}
-            onClick={(e) => {
-              console.log(setting.caption);
-              setSettings((prev) => ({
-                ...prev,
-                caption: !setting.caption,
-              }));
-            }}
+            on={raiseHand}
+            onClick={(e) => setRaiseHand(!raiseHand)}
+            onColor="#2563eb"
           >
             <FaRegHandPaper />
           </SmallButtons>
-          <SmallButtons
-            on={setting.caption}
-            onClick={(e) => {
-              console.log(setting.caption);
-              setSettings((prev) => ({
-                ...prev,
-                caption: !setting.caption,
-              }));
-            }}
-          >
+          <SmallButtons on={false} onColor="#2563eb">
             <BsThreeDotsVertical />
           </SmallButtons>
           <SmallButtons
@@ -130,11 +120,12 @@ const BottomBar = () => {
           </SmallButtons>
         </div>
         <div className="lastIcons flex items-center justify-end flex-grow basis-1 gap-5 text-white font-bold text-xl">
-          <MdInfoOutline /> {/* <MdInfo /> */}
-          <HiOutlineUsers /> {/* <HiUsers /> */}
-          <MdOutlineMessage /> {/* <MdMessage /> */}
-          <RiShapesLine /> {/* <RiShapesFill /> */}
-          <MdOutlineLockPerson /> {/* <MdLockPerson /> */}
+          <MdInfoOutline className="cursor-pointer" /> {/* <MdInfo /> */}
+          <HiOutlineUsers className="cursor-pointer" /> {/* <HiUsers /> */}
+          <MdOutlineMessage className="cursor-pointer" /> {/* <MdMessage /> */}
+          <RiShapesLine className="cursor-pointer" /> {/* <RiShapesFill /> */}
+          <MdOutlineLockPerson className="cursor-pointer" />{" "}
+          {/* <MdLockPerson /> */}
         </div>
       </nav>
     </div>
