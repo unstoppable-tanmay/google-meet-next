@@ -2,7 +2,12 @@ import Button from "@/components/common/Button";
 import React, { useState } from "react";
 
 import { FiMic, FiMicOff, FiUsers } from "react-icons/fi";
-import { BiMicrophone, BiMicrophoneOff, BiVideo, BiVideoOff } from "react-icons/bi";
+import {
+  BiMicrophone,
+  BiMicrophoneOff,
+  BiVideo,
+  BiVideoOff,
+} from "react-icons/bi";
 import { useRecoilState } from "recoil";
 import { joined, settings } from "@/state/atom";
 import { FaPhone, FaRegClosedCaptioning } from "react-icons/fa6";
@@ -29,8 +34,8 @@ const BottomBar = () => {
   return (
     <div className="wrapper flex flex-col">
       <div className="emojies"></div>
-      <nav className="w-full flex items-center justify-between px-6 py-5 text-white/80">
-        <div className="meetname font-medium tracking-wide flex-grow basis-1">
+      <nav className="w-full flex items-center justify-between px-6 pb-5 text-white/80">
+        <div className="meetname font-semibold tracking-wide flex-grow basis-1 text-ellipsis line-clamp-1">
           abc-defg-hij
         </div>
         <div className="middlebuttons flex gap-2 text-xl">
@@ -62,7 +67,7 @@ const BottomBar = () => {
           </SmallButtons>
           <SmallButtons
             on={setting.caption}
-            onColor="#2563eb"
+            onColor="#87b3f8"
             onClick={(e) => {
               console.log(setting.caption);
               setSettings((prev) => ({
@@ -75,7 +80,7 @@ const BottomBar = () => {
           </SmallButtons>
           <SmallButtons
             on={setting.emojies}
-            onColor="#2563eb"
+            onColor="#87b3f8"
             onClick={(e) => {
               console.log(setting.emojies);
               setSettings((prev) => ({
@@ -88,7 +93,7 @@ const BottomBar = () => {
           </SmallButtons>
           <SmallButtons
             on={setting.screenState}
-            onColor="#2563eb"
+            onColor="#87b3f8"
             onClick={(e) => {
               console.log(setting.screenState);
               setSettings((prev) => ({
@@ -103,11 +108,11 @@ const BottomBar = () => {
           <SmallButtons
             on={raiseHand}
             onClick={(e) => setRaiseHand(!raiseHand)}
-            onColor="#2563eb"
+            onColor="#87b3f8"
           >
             <FaRegHandPaper />
           </SmallButtons>
-          <SmallButtons on={false} onColor="#2563eb">
+          <SmallButtons on={false} onColor="#87b3f8">
             <BsThreeDotsVertical />
           </SmallButtons>
           <SmallButtons
@@ -119,7 +124,7 @@ const BottomBar = () => {
             <FaPhone className="rotate-[135deg] mx-2.5" />
           </SmallButtons>
         </div>
-        <div className="lastIcons flex items-center justify-end flex-grow basis-1 gap-5 text-white font-bold text-xl">
+        <div className="lastIcons flex items-center justify-end flex-grow basis-1 gap-5 text-white font-bold text-2xl">
           <MdInfoOutline className="cursor-pointer" /> {/* <MdInfo /> */}
           <HiOutlineUsers className="cursor-pointer" /> {/* <HiUsers /> */}
           <MdOutlineMessage className="cursor-pointer" /> {/* <MdMessage /> */}

@@ -1,5 +1,10 @@
+import { Device } from "mediasoup-client";
+import { Consumer } from "mediasoup-client/lib/Consumer";
+import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
+import { Transport } from "mediasoup-client/lib/Transport";
 import { atom } from "recoil";
 import { recoilPersist } from "recoil-persist";
+import { Socket } from "socket.io-client";
 
 const localStorage = typeof window !== `undefined` ? window.localStorage : null;
 
@@ -59,7 +64,7 @@ export const mediaDevices = atom<{
   },
 });
 
-export const joined = atom<"joined"|"joining"|"leaved"|"wrongcode">({
+export const joined = atom<"joined" | "joining" | "leaved" | "wrongcode">({
   key: "joined",
   default: "joining",
 });

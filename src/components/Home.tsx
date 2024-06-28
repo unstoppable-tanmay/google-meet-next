@@ -11,17 +11,40 @@ import { isLinkOrCode, isValidRoomId } from "@/lib/room-id";
 import Nav from "./Nav";
 import Settings from "./common/Settings/Settings";
 import { useRecoilState } from "recoil";
-import { settingsState } from "@/state/atom";
+import { joined, settingsState } from "@/state/atom";
 import { motion } from "framer-motion";
 import { Popover, PopoverContent, PopoverTrigger } from "@nextui-org/popover";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import { ServerResponse } from "@/types/types";
 
 const Home = () => {
   const [focus, setFocus] = useState(false);
   const [roomId, setRoomId] = useState("");
   const [open, setOpen] = useRecoilState(settingsState);
+  const [join, setJoin] = useRecoilState(joined);
+
+  const [meetForLaterModal, setMeetForLaterModal] = useState(false);
 
   const router = useRouter();
+
+  const handleCreateMeetForLater = () => {};
+
+  const handleStartInstantMeet = async () => {
+    const res = await axios.get(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/createInstantMeet`
+    );
+    const data: ServerResponse<{ id: string }> = res.data;
+
+    if (data.success) {
+      setJoin("joined");
+      router.push(`/${data.data?.id}`);
+    } else {
+    }
+  };
+
+  const handleCreateMeetWithSchedule = () => {};
+
   return (
     <>
       <Nav />
@@ -43,9 +66,7 @@ const Home = () => {
           <div className="buttons gap-6 flex flex-col md:flex-row items-center md:items-start">
             <Popover placement="bottom-start">
               <PopoverTrigger>
-                <div
-                  className="startbtn py-3 px-3 flex-shrink-0 rounded-[4px] bg-[#1a6dde]/95 hover:bg-[#1a6dde] text-white flex gap-1 items-center justify-center cursor-pointer relative select-none "
-                >
+                <div className="startbtn py-3 px-3 flex-shrink-0 rounded-[4px] bg-[#1a6dde]/95 hover:bg-[#1a6dde] text-white flex gap-1 items-center justify-center cursor-pointer relative select-none ">
                   <BiVideoPlus className="text-xl font-bold flex-shrink-0" />
                   <span className=" font-medium flex-shrink-0">
                     New meeting
@@ -54,19 +75,28 @@ const Home = () => {
               </PopoverTrigger>
               <PopoverContent className="shadow-lg max-h-[50vh] rounded-md bg-white z-[1100] flex flex-col overflow-y-scroll no-scrollbar px-0">
                 <>
-                  <div className="item w-full cursor-pointer flex flex-shrink-0 items-center py-3 px-4 gap-8 text-black hover:bg-black/10">
+                  <div
+                    onClick={handleCreateMeetForLater}
+                    className="item w-full cursor-pointer flex flex-shrink-0 items-center py-3 px-4 gap-8 text-black hover:bg-black/10"
+                  >
                     <IoMdLink className="text-xl flex-shrink-0" />
                     <span className="flex-shrink-0">
                       Create a meeting for later
                     </span>
                   </div>
-                  <div className="item w-full cursor-pointer flex flex-shrink-0 items-center py-3 px-4 gap-8 text-black hover:bg-black/10">
+                  <div
+                    onClick={handleStartInstantMeet}
+                    className="item w-full cursor-pointer flex flex-shrink-0 items-center py-3 px-4 gap-8 text-black hover:bg-black/10"
+                  >
                     <FaPlus className="text-xl flex-shrink-0" />
                     <span className="flex-shrink-0">
                       Start a instant meeting
                     </span>
                   </div>
-                  <div className="item w-full cursor-pointer flex flex-shrink-0 items-center py-3 px-4 gap-8 text-black hover:bg-black/10">
+                  <div
+                    onClick={handleCreateMeetWithSchedule}
+                    className="item w-full cursor-pointer flex flex-shrink-0 items-center py-3 px-4 gap-8 text-black hover:bg-black/10"
+                  >
                     <MdOutlineCalendarToday className="text-xl flex-shrink-0" />
                     <span className="flex-shrink-0">Schedule in Calander</span>
                   </div>
@@ -129,7 +159,7 @@ const Home = () => {
           about Google Meet
         </div>
       </motion.section>
-      {open && <Settings />}
+      {open && <Settings key={"asoidnhaoloisnd"} />}
     </>
   );
 };

@@ -17,10 +17,10 @@ const SmallButtons = ({
   onClick?: MouseEventHandler;
 }) => {
   return open ? (
-    <div className="flex rounded-full items-center bg-white/10 pl-1 gap-0.5">
+    <div className="lg:flex lg:rounded-full lg:items-center lg:bg-white/10 lg:pl-1 lg:gap-0.5">
       <Popover placement="top-start">
         <PopoverTrigger>
-          <div className="wrap">
+          <div className="wrap max-lg:hidden">
             <HiChevronUp />
           </div>
         </PopoverTrigger>
@@ -33,7 +33,7 @@ const SmallButtons = ({
         whileHover={{
           background: on ? onColor + "" : "rgb(255 255 255 / 0.25)",
         }}
-        className={`text-lg md:text-xl font-bold p-1.5 md:p-2.5 rounded-full duration-200 bg-white/15 hover:bg-white/25 outline-none`}
+        className={`text-xl font-bold p-[.7rem] rounded-full duration-200 bg-white/15 hover:bg-white/25 outline-none`}
         onClick={onClick}
       >
         {children}
@@ -44,7 +44,7 @@ const SmallButtons = ({
       transition={{ duration: 0.1 }}
       style={{ background: on ? onColor : "rgb(255 255 255 / 0.15)" }}
       whileHover={{ background: on ? onColor + "" : "rgb(255 255 255 / 0.25)" }}
-      className={`text-lg md:text-xl font-bold p-2 md:p-3 rounded-full duration-200 bg-white/15 hover:bg-white/25 outline-none`}
+      className={`text-xl font-bold p-[.7rem] rounded-full duration-200 bg-white/15 hover:bg-white/25 outline-none`}
       onClick={onClick}
     >
       {children}

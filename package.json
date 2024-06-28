@@ -13,7 +13,9 @@
     "@nextui-org/react": "^2.4.0",
     "@nextui-org/system": "^2.2.0",
     "@nextui-org/theme": "^2.2.4",
+    "axios": "^1.7.2",
     "framer-motion": "^11.2.6",
+    "mediasoup-client": "^3.7.12",
     "next": "14.2.3",
     "next-auth": "^4.24.7",
     "react": "^18",
@@ -21,7 +23,8 @@
     "react-icons": "^5.2.1",
     "react-select": "^5.8.0",
     "recoil": "^0.7.7",
-    "recoil-persist": "^5.1.0"
+    "recoil-persist": "^5.1.0",
+    "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
     "@types/node": "^20",

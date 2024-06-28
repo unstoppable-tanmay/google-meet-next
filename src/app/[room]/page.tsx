@@ -4,6 +4,7 @@ import JoinRoom from "@/components/room/JoinRoom";
 import JoinedRoom from "@/components/room/JoinedRoom";
 import { isValidRoomId } from "@/lib/room-id";
 import { joined } from "@/state/atom";
+import { Spinner } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -15,7 +16,6 @@ const Page = ({ params }: { params: { room: string } }) => {
 
   const [pageLoading, setPageLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState("Loading...");
-  const [pageTransition, setPageTransition] = useState(false);
 
   const [join, setJoin] = useRecoilState(joined);
 
@@ -37,22 +37,22 @@ const Page = ({ params }: { params: { room: string } }) => {
       ) : join == "joined" ? (
         <motion.div className="wrapper wrapper" key={"zsasdda"}>
           <motion.div
-            exit={{ opacity: [0, 0.5, 0.7, 1, 1, 1] }}
+            exit={{ opacity: [0, 0.5, 0.7, 0.7, 0.7, 0.7] }}
             transition={{ duration: 2 }}
             className="layer w-full h-full bg-black absolute pointer-events-none opacity-0 flex items-center justify-center text-3xl font-medium tracking-wide text-white z-[1000]"
           >
-            Leaving...
+            Leaving . . .
           </motion.div>
-          <JoinedRoom />
+          <JoinedRoom roomId={room} />
         </motion.div>
       ) : join == "joining" ? (
         <motion.div className="wrapper wrapper" key={"zsda"}>
           <motion.div
-            exit={{ opacity: [0, 0, 0, 1, 1, 1, 1] }}
+            exit={{ opacity: [0, 0, 0, 0.8, 0.8, 0.8, 0.8] }}
             transition={{ duration: 2 }}
             className="layer w-full h-full bg-black absolute pointer-events-none opacity-0 flex items-center justify-center text-3xl font-medium tracking-wide text-white z-[1000]"
           >
-            Joining...
+            Joining . . .
           </motion.div>
           <JoinRoom />
         </motion.div>
