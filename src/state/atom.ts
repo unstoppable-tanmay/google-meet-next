@@ -68,3 +68,8 @@ export const joined = atom<"joined" | "joining" | "leaved" | "wrongcode">({
   key: "joined",
   default: "joining",
 });
+
+export const tracksAtom = atom<MediaStreamTrack | null>({
+  key: "tracksAtom",
+  default: null,
+});

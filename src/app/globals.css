@@ -2,22 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body{
-    overflow-x: hidden;
+body {
+  overflow-x: hidden;
 }
 
-.no-scrollbar::-webkit-scrollbar{
-    display: none;
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-@layer base{
-    .mask-vertical-sm{
-        mask-image: linear-gradient(to bottom,transparent 0%, rgba(0, 0, 0, 0.9) 10%,rgba(0, 0, 0, 0.8) 30%,rgba(0, 0, 0, 0.8) 70%,rgba(0, 0, 0, 0.9) 90%, transparent 100%);
-    }
+@layer base {
+  .mask-vertical-sm {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(0, 0, 0,0.5),
+      black,
+      black,
+      black,
+      black,
+      black,
+      rgb(0, 0, 0,0.5),
+      transparent
+    );
+    /* mask-image: linear-gradient(to bottom,transparent 0%, rgba(0, 0, 0, 0.9) 20%,rgba(0, 0, 0, 0.8) 30%,rgba(0, 0, 0, 0.8) 70%,rgba(0, 0, 0, 0.9) 80%, transparent 100%); */
+  }
 }

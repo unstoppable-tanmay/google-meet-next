@@ -1,10 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import Sound from "../common/Sound";
 import Button from "../common/Button";
 
-import { Popover, PopoverTrigger, PopoverContent } from "@nextui-org/react";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Spinner,
+  Avatar,
+} from "@nextui-org/react";
 
 import { useRecoilState } from "recoil";
 import { joined, mediaDevices, settings } from "@/state/atom";
@@ -23,13 +29,18 @@ import { motion } from "framer-motion";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import User from "../common/User";
+import axios from "axios";
+import { MeetType } from "@/types/types";
 
-const JoinRoom = () => {
+const JoinRoom = ({ roomId }: { roomId: string }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [roomStateLoading, setRoomStateLoading] = useState(true);
 
   const [setting, setSettings] = useRecoilState(settings);
   const [mediaDevice, setMediaDevices] = useRecoilState(mediaDevices);
   const [join, setJoin] = useRecoilState(joined);
+
+  const [room, setRoom] = useState<MeetType | null>(null);
 
   const session = useSession();
   const router = useRouter();
@@ -100,6 +111,28 @@ const JoinRoom = () => {
     };
   }, [setting.cameraState, setting.camera]);
 
+  useEffect(() => {
+    getMeetingState();
+  }, []);
+
+  const getMeetingState = async () => {
+    try {
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/getMeetDetails`,
+        {
+          params: {
+            roomId: roomId,
+          },
+        }
+      );
+
+      if (res.status == 200) {
+        setRoom(res.data.data);
+        setRoomStateLoading(false);
+      }
+    } catch (error) {}
+  };
+
   return (
     <motion.section
       exit={{ transition: { duration: 1 } }}
@@ -152,7 +185,7 @@ const JoinRoom = () => {
             <div className="overlay absolute top-0 left-0 w-full h-full flex flex-col justify-between">
               <div className="top flex w-full items-center justify-between px-4 py-4">
                 <div className="name text-white font-medium text-sm">
-                  Tanmay Kumar
+                  {session.data?.user?.name?.split(" ").slice(0, 2).join(" ")}
                 </div>
                 <div className="menu">
                   <HiDotsVertical className="text-white text-xl" />
@@ -277,31 +310,68 @@ const JoinRoom = () => {
             </Popover>
           </div>
         </div>
-        <div className="joining flex flex-col items-center justify-center xl:pr-28">
-          <div className="heading text-2xl mb-6">Ready to join?</div>
-          <div className="available text-sm font-semibold text-black/60 mb-4">
-            No one else is here
+        {roomStateLoading ? (
+          <div className="flex items-center justify-center">
+            <Spinner />
           </div>
-          <div className="buttons flex gap-2 items-center text-sm font-medium mb-10">
-            <div
-              className="joinnow cursor-pointer px-6 py-3.5 rounded-full duration-200 bg-blue-500 text-white shadow-lg hover:bg-blue-600"
-              onClick={(e) => setJoin("joined")}
-            >
-              Join now
+        ) : (
+          <div className="joining flex flex-col items-center justify-center xl:pr-28">
+            <div className="heading text-2xl mb-6">Ready to join?</div>
+            <div className="available text-sm font-semibold text-black/60 mb-2 flex gap-1">
+              {room?.users?.length &&
+                room.users?.map((e) => {
+                  return (
+                    <>
+                      <Avatar src={e.image} size="sm" />
+                    </>
+                  );
+                })}
             </div>
-            <div className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]">
-              <MdOutlinePresentToAll className="text-2xl" />
-              Present
+            <div className="available text-xs font-semibold text-black/60 mb-4">
+              {room?.users?.length
+                ? room.users?.map((e) => {
+                    return <>{e.name}</>;
+                  })
+                : "No one else is here"}
+            </div>
+            <div className="buttons flex gap-2 items-center text-sm font-medium mb-10">
+              {room?.admin.email === session.data?.user?.email ? (
+                <>
+                  <div
+                    className="joinnow cursor-pointer px-6 py-3.5 rounded-full duration-200 bg-blue-500 text-white shadow-lg hover:bg-blue-600"
+                    onClick={(e) => setJoin("joined")}
+                  >
+                    Join now
+                  </div>
+                  <div className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]">
+                    <MdOutlinePresentToAll className="text-2xl" />
+                    Present
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div
+                    className="joinnow cursor-pointer px-6 py-3.5 rounded-full duration-200 bg-blue-500 text-white shadow-lg hover:bg-blue-600"
+                    onClick={(e) => setJoin("joined")}
+                  >
+                    Ask To Join
+                  </div>
+                  <div className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]">
+                    <MdOutlinePresentToAll className="text-2xl" />
+                    Present
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="desc text-sm font-semibold text-black/60 mb-5">
+              Other joining options
+            </div>
+            <div className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2">
+              <MdOutlinePhonelink className="text-2xl" />
+              Use Companion Mode
             </div>
           </div>
-          <div className="desc text-sm font-semibold text-black/60 mb-5">
-            Other joining options
-          </div>
-          <div className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2">
-            <MdOutlinePhonelink className="text-2xl" />
-            Use Companion Mode
-          </div>
-        </div>
+        )}
       </div>
     </motion.section>
   );

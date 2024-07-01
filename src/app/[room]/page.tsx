@@ -5,6 +5,7 @@ import JoinedRoom from "@/components/room/JoinedRoom";
 import { isValidRoomId } from "@/lib/room-id";
 import { joined } from "@/state/atom";
 import { Spinner } from "@nextui-org/react";
+import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -22,11 +23,28 @@ const Page = ({ params }: { params: { room: string } }) => {
   useEffect(() => {
     if (!isValidRoomId(room)) {
       setLoadingMessage("Invalid Room Code");
-      router.replace("/");
+      setJoin("wrongcode");
     } else {
-      setPageLoading(false);
+      checkRoom(room);
     }
   }, [room, router, setJoin]);
+
+  const checkRoom = async (roomId: string) => {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/isMeetExist`,
+      {
+        params: {
+          roomId,
+        },
+      }
+    );
+
+    if (response.status == 200 && response.data.data) {
+    } else {
+      setJoin("wrongcode");
+    }
+    setPageLoading(false);
+  };
 
   return (
     <AnimatePresence mode="wait">
@@ -54,14 +72,14 @@ const Page = ({ params }: { params: { room: string } }) => {
           >
             Joining . . .
           </motion.div>
-          <JoinRoom />
+          <JoinRoom roomId={room} />
         </motion.div>
       ) : join == "leaved" ? (
         <section className="w-screen h-screen flex items-center justify-center text-xl">
           Leaved
           <button
             className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
-            onClick={(e) => setJoin("joining")}
+            onClick={(e) => router.replace('/')}
           >
             Return
           </button>
@@ -71,7 +89,7 @@ const Page = ({ params }: { params: { room: string } }) => {
           WrongCode
           <button
             className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
-            onClick={(e) => setJoin("joining")}
+            onClick={(e) => router.replace('/')}
           >
             Return
           </button>
@@ -81,7 +99,7 @@ const Page = ({ params }: { params: { room: string } }) => {
           Back Nothing Here
           <button
             className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
-            onClick={(e) => setJoin("joining")}
+            onClick={(e) => router.replace('/')}
           >
             Return
           </button>

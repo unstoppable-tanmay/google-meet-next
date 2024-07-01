@@ -17,8 +17,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@nextui-org/popover";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { ServerResponse } from "@/types/types";
+import { useSession } from "next-auth/react";
 
 const Home = () => {
+  const session = useSession();
+
   const [focus, setFocus] = useState(false);
   const [roomId, setRoomId] = useState("");
   const [open, setOpen] = useRecoilState(settingsState);
@@ -31,8 +34,24 @@ const Home = () => {
   const handleCreateMeetForLater = () => {};
 
   const handleStartInstantMeet = async () => {
-    const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/createInstantMeet`
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/createInstantMeet`,
+      {
+        user: {
+          name: session.data?.user?.name,
+          email: session.data?.user?.email,
+          image: session.data?.user?.image
+        },
+        settings: {
+          shareScreen: true,
+          sendChatMessage: true,
+          sendReaction: true,
+          turnOnMic: true,
+          turnOnVideo: true,
+          hostMustJoinBeforeAll: true,
+          access: "trusted",
+        },
+      }
     );
     const data: ServerResponse<{ id: string }> = res.data;
 
