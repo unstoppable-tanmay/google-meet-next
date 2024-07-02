@@ -15,9 +15,11 @@ import { joinRoom, sendVideo } from "@/lib/helper";
 
 import { BiSolidBuildings } from "react-icons/bi";
 import { useSession } from "next-auth/react";
+import { socketAtom } from "@/state/JoinedRoomAtom";
 
 const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
+  const [socket, setSocket] = useRecoilState(socketAtom);
 
   // whole session join
   const [join, setJoin] = useRecoilState(joined);
@@ -32,9 +34,9 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
   // Joining Logic
   useEffect(() => {
-    const socket = io(`${process.env.NEXT_PUBLIC_SERVER_URL}/mediasoup`, {
-      transports: ["websocket"],
-    });
+    // const socket = io(`${process.env.NEXT_PUBLIC_SERVER_URL}/mediasoup`, {
+    //   transports: ["websocket"],
+    // });
 
     socket!.on("connection-success", ({ socketId }) => {
       console.log("joining");

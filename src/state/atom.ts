@@ -14,6 +14,11 @@ const { persistAtom } = recoilPersist({
   converter: JSON,
 });
 
+const socketAtom = atom<Socket | null>({
+  key: "socketAtom",
+  default: null,
+});
+
 export const settingsState = atom({
   key: "settingsState",
   default: false,
