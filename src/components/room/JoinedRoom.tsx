@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import { io } from "socket.io-client";
+import { Socket, io } from "socket.io-client";
 
 import { useRecoilState } from "recoil";
 import { joined, settings, tracksAtom } from "@/state/atom";

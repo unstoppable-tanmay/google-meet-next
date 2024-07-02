@@ -8,12 +8,16 @@ import { Spinner } from "@nextui-org/react";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useRecoilState } from "recoil";
+import { Socket, io } from "socket.io-client";
 
 const Page = ({ params }: { params: { room: string } }) => {
   const room = params.room;
   const router = useRouter();
+
+  // let socket: Socket
+  // const [socket, setSocket] = useState<Socket>();
 
   const [pageLoading, setPageLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState("Loading...");
@@ -45,6 +49,15 @@ const Page = ({ params }: { params: { room: string } }) => {
     }
     setPageLoading(false);
   };
+
+  // useLayoutEffect(() => {
+  //   if (!socket)
+  //     setSocket(
+  //       io(`${process.env.NEXT_PUBLIC_SERVER_URL}/mediasoup`, {
+  //         transports: ["websocket"],
+  //       })
+  //     );
+  // }, []);
 
   return (
     <AnimatePresence mode="wait">
@@ -79,7 +92,7 @@ const Page = ({ params }: { params: { room: string } }) => {
           Leaved
           <button
             className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
-            onClick={(e) => router.replace('/')}
+            onClick={(e) => router.replace("/")}
           >
             Return
           </button>
@@ -89,7 +102,7 @@ const Page = ({ params }: { params: { room: string } }) => {
           WrongCode
           <button
             className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
-            onClick={(e) => router.replace('/')}
+            onClick={(e) => router.replace("/")}
           >
             Return
           </button>
@@ -99,7 +112,7 @@ const Page = ({ params }: { params: { room: string } }) => {
           Back Nothing Here
           <button
             className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
-            onClick={(e) => router.replace('/')}
+            onClick={(e) => router.replace("/")}
           >
             Return
           </button>

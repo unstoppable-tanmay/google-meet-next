@@ -40,8 +40,7 @@ export type PeerDetailsType = {
 
 export type MeetType = {
   router: Router | null;
-  peers: string[];
-  users: PeerDetailsType[];
+  peers: PeerDetailsType[];
   admin: PeerDetailsType;
   settings: RoomSettings;
   started: boolean;

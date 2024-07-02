@@ -31,6 +31,7 @@ import { useRouter } from "next/navigation";
 import User from "../common/User";
 import axios from "axios";
 import { MeetType } from "@/types/types";
+import { Socket } from "socket.io-client";
 
 const JoinRoom = ({ roomId }: { roomId: string }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -45,9 +46,9 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
   const router = useRouter();
 
-  useEffect(() => {
-    if (session.status == "unauthenticated") router.replace("/");
-  }, [session, router]);
+  // useEffect(() => {
+  //   if (session.status == "unauthenticated") router.replace("/");
+  // }, [session, router]);
 
   // Get Devices
   useEffect(() => {
@@ -132,6 +133,8 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
       }
     } catch (error) {}
   };
+
+  const askForJoin = () => {};
 
   return (
     <motion.section
@@ -318,8 +321,8 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
           <div className="joining flex flex-col items-center justify-center xl:pr-28">
             <div className="heading text-2xl mb-6">Ready to join?</div>
             <div className="available text-sm font-semibold text-black/60 mb-2 flex gap-1">
-              {room?.users?.length &&
-                room.users?.map((e) => {
+              {room?.peers?.length &&
+                room.peers?.map((e) => {
                   return (
                     <>
                       <Avatar src={e.image} size="sm" />
@@ -328,25 +331,49 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
                 })}
             </div>
             <div className="available text-xs font-semibold text-black/60 mb-4">
-              {room?.users?.length
-                ? room.users?.map((e) => {
-                    return <>{e.name}</>;
-                  })
-                : "No one else is here"}
+              {room?.peers?.length ? (
+                <>
+                  {room.peers?.map((e) => {
+                    return <>{e.name.split(" ")[0]}</>;
+                  })}{" "}
+                  is here
+                </>
+              ) : (
+                "No one else is here"
+              )}
             </div>
             <div className="buttons flex gap-2 items-center text-sm font-medium mb-10">
               {room?.admin.email === session.data?.user?.email ? (
                 <>
-                  <div
-                    className="joinnow cursor-pointer px-6 py-3.5 rounded-full duration-200 bg-blue-500 text-white shadow-lg hover:bg-blue-600"
-                    onClick={(e) => setJoin("joined")}
-                  >
-                    Join now
-                  </div>
-                  <div className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]">
-                    <MdOutlinePresentToAll className="text-2xl" />
-                    Present
-                  </div>
+                  {room?.peers.find(
+                    (e) => e.email == session.data?.user?.email
+                  ) ? (
+                    <>
+                      <div
+                        className="joinnow cursor-pointer px-6 py-3.5 rounded-full duration-200 bg-blue-500 text-white shadow-lg hover:bg-blue-600"
+                        onClick={(e) => setJoin("joined")}
+                      >
+                        Switch Here
+                      </div>
+                      <div className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]">
+                        <MdOutlinePresentToAll className="text-2xl" />
+                        Present
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div
+                        className="joinnow cursor-pointer px-6 py-3.5 rounded-full duration-200 bg-blue-500 text-white shadow-lg hover:bg-blue-600"
+                        onClick={(e) => setJoin("joined")}
+                      >
+                        Join now
+                      </div>
+                      <div className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]">
+                        <MdOutlinePresentToAll className="text-2xl" />
+                        Present
+                      </div>
+                    </>
+                  )}
                 </>
               ) : (
                 <>
@@ -366,6 +393,13 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
             <div className="desc text-sm font-semibold text-black/60 mb-5">
               Other joining options
             </div>
+            {room?.admin.email === session.data?.user?.email &&
+              room?.peers.find((e) => e.email == session.data?.user?.email) && (
+                <div className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2 pb-3">
+                  <MdOutlinePhonelink className="text-2xl" />
+                  Join Here Also
+                </div>
+              )}
             <div className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2">
               <MdOutlinePhonelink className="text-2xl" />
               Use Companion Mode
