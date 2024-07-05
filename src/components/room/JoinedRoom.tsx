@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Socket, io } from "socket.io-client";
 
 import { useRecoilState } from "recoil";
-import { joined, settings, tracksAtom } from "@/state/atom";
+import { joined, settings, socketAtom, tracksAtom } from "@/state/atom";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Spinner } from "@nextui-org/react";
@@ -15,11 +15,11 @@ import { joinRoom, sendVideo } from "@/lib/helper";
 
 import { BiSolidBuildings } from "react-icons/bi";
 import { useSession } from "next-auth/react";
-import { socketAtom } from "@/state/JoinedRoomAtom";
+import { useSocket } from "@/provider/SocketContext";
 
 const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
-  const [socket, setSocket] = useRecoilState(socketAtom);
+  // const [socket, setSocket] = useRecoilState(socketAtom);
 
   // whole session join
   const [join, setJoin] = useRecoilState(joined);
@@ -32,34 +32,40 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
   const [setting, setSettings] = useRecoilState(settings);
 
+  const { socket } = useSocket();
+
   // Joining Logic
   useEffect(() => {
     // const socket = io(`${process.env.NEXT_PUBLIC_SERVER_URL}/mediasoup`, {
     //   transports: ["websocket"],
     // });
 
-    socket!.on("connection-success", ({ socketId }) => {
-      console.log("joining");
-      joinRoom(socket, roomId, setTracks, {
-        email: session.data?.user?.email!,
-        isAdmin: false,
-        name: session.data?.user?.name!,
-        image: session.data?.user?.image || "",
+    // const socket = socketInitializer();
+    if (socket) {
+      socket.emit("start-meet");
+      socket?.on("connection-success", ({ socketId }) => {
+        console.log("joining");
+        joinRoom(
+          socket,
+          roomId,
+          setTracks,
+          {
+            email: session.data?.user?.email!,
+            isAdmin: false,
+            name: session.data?.user?.name!,
+            image: session.data?.user?.image || "",
+          },
+          setLoading
+        );
       });
-    });
-
-    return () => {
-      socket.off();
-      socket.close();
-      // producerTransport?.close()
-    };
+    }
   }, []);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     setLoading(false);
+  //   }, 1000);
+  // }, []);
 
   // useEffect(() => {
   //   if (videoContainer.current) {
@@ -101,32 +107,32 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
                 },
                 {
                   name: "Tanmay",
-                  socketId: "asdagsdggf",
+                  socketId: "fghjym",
                   tracks: [],
                 },
                 {
                   name: "Tanmay",
-                  socketId: "asdagsdggf",
+                  socketId: "serg",
                   tracks: [],
                 },
                 {
                   name: "Tanmay",
-                  socketId: "asdagsdggf",
+                  socketId: "ehrt",
                   tracks: [],
                 },
                 // {
                 //   name: "Tanmay",
-                //   socketId: "asdagsdggf",
+                //   socketId: "asd",
                 //   tracks: [],
                 // },
                 // {
                 //   name: "Tanmay",
-                //   socketId: "asdagsdggf",
+                //   socketId: "nrtyg",
                 //   tracks: [],
                 // },
                 // {
                 //   name: "Tanmay",
-                //   socketId: "asdagsdggf",
+                //   socketId: "zdfb",
                 //   tracks: [],
                 // },
               ]}

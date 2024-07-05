@@ -3,10 +3,12 @@ import { Consumer } from "mediasoup-client/lib/Consumer";
 import { ProducerOptions } from "mediasoup-client/lib/Producer";
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Transport } from "mediasoup-client/lib/Transport";
-import { Socket } from "socket.io-client";
+import { Socket, io } from "socket.io-client";
 import { params } from "@/lib/constants";
 import { SetterOrUpdater } from "recoil";
 import { PeerDetailsType } from "@/types/types";
+
+// let socket: Socket|null = null;
 
 let device: Device;
 let rtpCapabilities: RtpCapabilities;
@@ -19,13 +21,31 @@ let consumerTransports: {
   consumer: Consumer;
 }[] = [];
 
+// export const socketInitializer = () => {
+//   if (socket) {
+//     console.log(socket);
+//     return socket;
+//   } else {
+//     socket = io(`${process.env.NEXT_PUBLIC_SERVER_URL}/mediasoup`, {
+//       transports: ["websocket"],
+//     });
+
+//     socket.on('connection-success', () => {
+//       console.log('Socket connected:', socket?.id);
+//     });
+//     return socket;
+//   }
+// };
+
 export const joinRoom = (
   socket: Socket,
   roomId: string,
   setTracks: SetterOrUpdater<MediaStreamTrack | null>,
-  peerDetails: PeerDetailsType
+  peerDetails: PeerDetailsType,
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   socket!.emit("joinRoom", { roomName: roomId, peerDetails }, (data: any) => {
+    setLoading(false);
     rtpCapabilities = data.rtpCapabilities;
     console.log("creating device", data.rtpCapabilities);
     createDevice(socket, data.rtpCapabilities, setTracks);
@@ -63,10 +83,10 @@ const createDevice = async (
     device = new Device();
 
     await device.load({
-      routerRtpCapabilities: rtpCapabilities!,
+      routerRtpCapabilities: rtpCapabilities,
     });
 
-    createSendTransport(socket, setTracks);
+    if (device.loaded) createSendTransport(socket,device, setTracks);
   } catch (error: any) {
     console.log(error);
     if (error.name === "UnsupportedError")
@@ -76,84 +96,86 @@ const createDevice = async (
 
 const createSendTransport = (
   socket: Socket,
+  device:Device,
   setTracks: SetterOrUpdater<MediaStreamTrack | null>
 ) => {
-  socket!.emit(
-    "createWebRtcTransport",
-    { consumer: false },
-    async ({ params }: { params: any }) => {
-      if (params.error) {
-        console.log(params.error);
-        return;
+  if (device.loaded)
+    socket!.emit(
+      "createWebRtcTransport",
+      { consumer: false },
+      async ({ params }: { params: any }) => {
+        if (params.error) {
+          console.log(params.error);
+          return;
+        }
+
+        console.log(device);
+
+        let locproducerTransport = device.createSendTransport(params);
+
+        locproducerTransport!.on(
+          "connect",
+          async ({ dtlsParameters }, callback, errback) => {
+            try {
+              await socket!.emit("transport-connect", {
+                dtlsParameters,
+              });
+
+              callback();
+            } catch (error: any) {
+              errback(error);
+            }
+          }
+        );
+
+        locproducerTransport!.on(
+          "produce",
+          async (parameters, callback, errback) => {
+            console.log(parameters);
+
+            try {
+              await socket!.emit(
+                "transport-produce",
+                {
+                  kind: parameters.kind,
+                  rtpParameters: parameters.rtpParameters,
+                  appData: parameters.appData,
+                },
+                ({ id, producersExist }: { id: any; producersExist: any }) => {
+                  callback({ id });
+
+                  if (producersExist) getProducers(socket, device, setTracks);
+                }
+              );
+            } catch (error: any) {
+              errback(error);
+            }
+          }
+        );
+
+        producerTransport = locproducerTransport;
+
+        // console.log("getting the track");
+
+        // const track = await window.navigator.mediaDevices
+        //   .getUserMedia({
+        //     audio: true,
+        //     video: {
+        //       width: {
+        //         min: 640,
+        //         max: 1920,
+        //       },
+        //       height: {
+        //         min: 400,
+        //         max: 1080,
+        //       },
+        //     },
+        //   })
+        //   .then((e) => e.getVideoTracks());
+
+        // connectSendTransport(track[0], "video");
       }
-
-      console.log(device);
-
-      let locproducerTransport = device!.createSendTransport(params);
-
-      locproducerTransport!.on(
-        "connect",
-        async ({ dtlsParameters }, callback, errback) => {
-          try {
-            await socket!.emit("transport-connect", {
-              dtlsParameters,
-            });
-
-            callback();
-          } catch (error: any) {
-            errback(error);
-          }
-        }
-      );
-
-      locproducerTransport!.on(
-        "produce",
-        async (parameters, callback, errback) => {
-          console.log(parameters);
-
-          try {
-            await socket!.emit(
-              "transport-produce",
-              {
-                kind: parameters.kind,
-                rtpParameters: parameters.rtpParameters,
-                appData: parameters.appData,
-              },
-              ({ id, producersExist }: { id: any; producersExist: any }) => {
-                callback({ id });
-
-                if (producersExist) getProducers(socket, device, setTracks);
-              }
-            );
-          } catch (error: any) {
-            errback(error);
-          }
-        }
-      );
-
-      producerTransport = locproducerTransport;
-
-      // console.log("getting the track");
-
-      // const track = await window.navigator.mediaDevices
-      //   .getUserMedia({
-      //     audio: true,
-      //     video: {
-      //       width: {
-      //         min: 640,
-      //         max: 1920,
-      //       },
-      //       height: {
-      //         min: 400,
-      //         max: 1080,
-      //       },
-      //     },
-      //   })
-      //   .then((e) => e.getVideoTracks());
-
-      // connectSendTransport(track[0], "video");
-    }
-  );
+    );
 };
 
 const getProducers = (

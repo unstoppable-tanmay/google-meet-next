@@ -3,7 +3,7 @@
 import JoinRoom from "@/components/room/JoinRoom";
 import JoinedRoom from "@/components/room/JoinedRoom";
 import { isValidRoomId } from "@/lib/room-id";
-import SocketProvider from "@/provider/SocketProvider";
+import { SocketProvider } from "@/provider/SocketContext";
 import { joined } from "@/state/atom";
 import { Spinner } from "@nextui-org/react";
 import axios from "axios";
@@ -18,7 +18,7 @@ const Page = ({ params }: { params: { room: string } }) => {
   const router = useRouter();
 
   // let socket: Socket
-  // const [socket, setSocket] = useState<Socket>();
+  const [socket, setSocket] = useState<Socket>();
 
   const [pageLoading, setPageLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState("Loading...");
@@ -51,14 +51,7 @@ const Page = ({ params }: { params: { room: string } }) => {
     setPageLoading(false);
   };
 
-  // useLayoutEffect(() => {
-  //   if (!socket)
-  //     setSocket(
-  //       io(`${process.env.NEXT_PUBLIC_SERVER_URL}/mediasoup`, {
-  //         transports: ["websocket"],
-  //       })
-  //     );
-  // }, []);
+  // useEffect(() => {}, []);
 
   return (
     <SocketProvider>

@@ -6,10 +6,10 @@ import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Transport } from "mediasoup-client/lib/Transport";
 import { Socket } from "socket.io-client";
 
-export const socketAtom = atom<Socket | null>({
-  key: "socketAtom",
-  default: null,
-});
+// export const socketAtom = atom<Socket | null>({
+//   key: "socketAtom",
+//   default: null,
+// });
 
 export const deviceAtom = atom<Device | null>({
   key: "deviceAtom",
