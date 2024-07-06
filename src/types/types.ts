@@ -8,6 +8,13 @@ export type UserType =
     }
   | undefined;
 
+export type UserSocketType = {
+  socketId: string;
+  name: string;
+  image?: string;
+  tracks: MediaStreamTrack;
+};
+
 export interface ServerResponse<T> {
   success: boolean;
   message: string;

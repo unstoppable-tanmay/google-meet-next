@@ -1,3 +1,4 @@
+import { UserSocketType } from "@/types/types";
 import { Device } from "mediasoup-client";
 import { Consumer } from "mediasoup-client/lib/Consumer";
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
@@ -12,11 +13,6 @@ const { persistAtom } = recoilPersist({
   key: "recoil-persist",
   storage: localStorage!,
   converter: JSON,
-});
-
-export const socketAtom = atom<Socket | null>({
-  key: "socketAtom",
-  default: null,
 });
 
 export const settingsState = atom({
@@ -74,7 +70,7 @@ export const joined = atom<"joined" | "joining" | "leaved" | "wrongcode">({
   default: "joining",
 });
 
-export const tracksAtom = atom<MediaStreamTrack | null>({
+export const tracksAtom = atom<UserSocketType[]>({
   key: "tracksAtom",
-  default: null,
+  default: [],
 });

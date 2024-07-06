@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Socket, io } from "socket.io-client";
 
 import { useRecoilState } from "recoil";
-import { joined, settings, socketAtom, tracksAtom } from "@/state/atom";
+import { joined, settings, tracksAtom } from "@/state/atom";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Spinner } from "@nextui-org/react";
@@ -16,23 +16,26 @@ import { joinRoom, sendVideo } from "@/lib/helper";
 import { BiSolidBuildings } from "react-icons/bi";
 import { useSession } from "next-auth/react";
 import { useSocket } from "@/provider/SocketContext";
+import { PeerDetailsType, UserSocketType, UserType } from "@/types/types";
 
 const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
-  // const [socket, setSocket] = useRecoilState(socketAtom);
+  const { socket } = useSocket();
 
   // whole session join
   const [join, setJoin] = useRecoilState(joined);
-  const videoContainer = useRef<HTMLVideoElement>(null);
 
   const [tracks, setTracks] = useRecoilState(tracksAtom);
 
   // initial loading
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const [setting, setSettings] = useRecoilState(settings);
 
-  const { socket } = useSocket();
+  const callevent = (event: string, data: any) => {
+    console.log(event);
+    socket?.emit(event, data);
+  };
 
   // Joining Logic
   useEffect(() => {
@@ -40,11 +43,10 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
     //   transports: ["websocket"],
     // });
 
-    // const socket = socketInitializer();
     if (socket) {
       socket.emit("start-meet");
+      console.log("joining");
       socket?.on("connection-success", ({ socketId }) => {
-        console.log("joining");
         joinRoom(
           socket,
           roomId,
@@ -58,21 +60,20 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
           setLoading
         );
       });
+
+      socket.on(
+        "asking-join",
+        ({ user }: { user: UserType }, callback: (data: boolean) => void) => {
+          // TODO to create the asking logic and return the response
+          callback(true);
+        }
+      );
     }
   }, []);
 
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setLoading(false);
-  //   }, 1000);
-  // }, []);
-
-  // useEffect(() => {
-  //   if (videoContainer.current) {
-  //     videoContainer.current.srcObject = new MediaStream([tracks!]);
-  //   }
-  //   console.log(tracks);
-  // }, [tracks]);
+  useEffect(() => {
+    if (setting.camera) sendVideo();
+  }, [setting.camera]);
 
   return (
     <AnimatePresence>
@@ -89,7 +90,12 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
         <section className="w-full h-screen bg-[#202124] flex flex-col">
           {false && (
             <div className="topbar py-2 px-6 flex">
-              <div className="viewers bg-[#f4bc16] p-2 flex items-center justify-center rounded-md">
+              <div
+                onClick={(e) =>
+                  socket?.emit("asking-join", { user: session.data?.user })
+                }
+                className="viewers bg-[#f4bc16] p-2 flex items-center justify-center rounded-md"
+              >
                 <BiSolidBuildings className="text-xl" />
               </div>
             </div>
@@ -98,47 +104,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
             layout
             className="responsive-area flex-1 p-2 w-full flex gap-2"
           >
-            <VideoArea
-              users={[
-                {
-                  name: "Tanmay",
-                  socketId: "asdagsdggf",
-                  tracks: [],
-                },
-                {
-                  name: "Tanmay",
-                  socketId: "fghjym",
-                  tracks: [],
-                },
-                {
-                  name: "Tanmay",
-                  socketId: "serg",
-                  tracks: [],
-                },
-                {
-                  name: "Tanmay",
-                  socketId: "ehrt",
-                  tracks: [],
-                },
-                // {
-                //   name: "Tanmay",
-                //   socketId: "asd",
-                //   tracks: [],
-                // },
-                // {
-                //   name: "Tanmay",
-                //   socketId: "nrtyg",
-                //   tracks: [],
-                // },
-                // {
-                //   name: "Tanmay",
-                //   socketId: "zdfb",
-                //   tracks: [],
-                // },
-              ]}
-            />
-            {/* <video src="" ref={videoContainer} controls></video>
-            <button onClick={(e) => sendVideo()} className="bg-white">Send</button> */}
+            <VideoArea />
             <motion.div
               initial={{ marginRight: "-358px" }}
               animate={
@@ -150,6 +116,17 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
               className="rightArea w-[350px] h-full bg-white rounded-lg flex-shrink-0"
             ></motion.div>
           </motion.div>
+          <div
+            onClick={(e) =>
+              callevent("ask-join", {
+                user: session.data?.user,
+                roomName: roomId,
+              })
+            }
+            className="viewers bg-[#f4bc16] p-2 flex items-center justify-center rounded-md"
+          >
+            <BiSolidBuildings className="text-xl" />
+          </div>
           <BottomBar />
         </section>
       )}

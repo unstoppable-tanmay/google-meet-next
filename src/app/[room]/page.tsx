@@ -26,13 +26,14 @@ const Page = ({ params }: { params: { room: string } }) => {
   const [join, setJoin] = useRecoilState(joined);
 
   useEffect(() => {
+    console.log("main page")
     if (!isValidRoomId(room)) {
       setLoadingMessage("Invalid Room Code");
       setJoin("wrongcode");
     } else {
       checkRoom(room);
     }
-  }, [room, router, setJoin]);
+  }, []);
 
   const checkRoom = async (roomId: string) => {
     const response = await axios.get(
