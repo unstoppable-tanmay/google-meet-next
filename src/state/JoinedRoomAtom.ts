@@ -5,40 +5,9 @@ import { Consumer } from "mediasoup-client/lib/Consumer";
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Transport } from "mediasoup-client/lib/Transport";
 import { Socket } from "socket.io-client";
+import { MeetType } from "@/types/types";
 
-// export const socketAtom = atom<Socket | null>({
-//   key: "socketAtom",
-//   default: null,
-// });
-
-export const deviceAtom = atom<Device | null>({
-  key: "deviceAtom",
+export const meetDetailsAtom = atom<MeetType | null>({
+  key: "meetDetailsAtom",
   default: null,
-});
-
-export const rtpCapabilitiesAtom = atom<RtpCapabilities | null>({
-  key: "rtpCapabilitiesAtom",
-  default: null,
-});
-
-export const producerTransportAtom = atom<Transport | null>({
-  key: "producerTransportAtom",
-  default: null,
-});
-
-export const consumerTransportsAtom = atom<
-  {
-    consumerTransport: Transport;
-    serverConsumerTransportId: string;
-    producerId: string;
-    consumer: Consumer;
-  }[]
->({
-  key: "consumerTransportsAtom",
-  default: [],
-});
-
-export const consumingTransportsAtom = atom<string[]>({
-  key: "consumingTransportsAtom",
-  default: [],
 });

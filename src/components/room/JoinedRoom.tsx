@@ -11,12 +11,19 @@ import { Spinner } from "@nextui-org/react";
 import BottomBar from "./components/BottomBar";
 import VideoArea from "./components/VideoArea";
 
-import { joinRoom, sendVideo } from "@/lib/helper";
+import { connectSendTransport, joinRoom, sendVideo } from "@/lib/helper";
 
 import { BiSolidBuildings } from "react-icons/bi";
 import { useSession } from "next-auth/react";
 import { useSocket } from "@/provider/SocketContext";
-import { PeerDetailsType, UserSocketType, UserType } from "@/types/types";
+import {
+  MeetType,
+  PeerDetailsType,
+  UserSocketType,
+  UserType,
+} from "@/types/types";
+import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
+import { VideoManager } from "@/lib/transports-manager";
 
 const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
@@ -31,6 +38,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const [loading, setLoading] = useState(false);
 
   const [setting, setSettings] = useRecoilState(settings);
+  const [meetDetails, setMeetDetails] = useRecoilState(meetDetailsAtom);
 
   const callevent = (event: string, data: any) => {
     console.log(event);
@@ -53,11 +61,16 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
           setTracks,
           {
             email: session.data?.user?.email!,
-            isAdmin: false,
             name: session.data?.user?.name!,
             image: session.data?.user?.image || "",
+            audio: setting.microphoneState,
+            video: setting.cameraState,
+            screen: setting.screenState,
+            hand: false,
+            socketId: socket.id,
           },
-          setLoading
+          setLoading,
+          setMeetDetails
         );
       });
 
@@ -68,12 +81,63 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
           callback(true);
         }
       );
+
+      socket.on(
+        "new-join",
+        ({
+          socketId,
+          peerDetails,
+          meetDetails,
+        }: {
+          socketId: string;
+          peerDetails: PeerDetailsType;
+          meetDetails: MeetType;
+        }) => {
+          setMeetDetails(meetDetails);
+          console.log(socketId, peerDetails, meetDetails);
+        }
+      );
     }
   }, []);
 
-  useEffect(() => {
-    if (setting.camera) sendVideo();
-  }, [setting.camera]);
+  // useEffect(() => {
+  //   let stream: MediaStream | null;
+  //   const videoManager = async () => {
+  //     if (setting.cameraState) {
+  //       stream = await window.navigator.mediaDevices.getUserMedia({
+  //         video: {
+  //           noiseSuppression: true,
+  //         },
+  //       });
+  //       connectSendTransport(stream.getAudioTracks()[0], "video");
+  //     } else {
+  //       stream?.getAudioTracks().map((e) => e.stop());
+  //     }
+  //   };
+  //   videoManager();
+  // }, [setting.cameraState]);
+
+  // useEffect(() => {
+  //   let stream: MediaStream | null;
+  //   const audioManager = async () => {
+  //     if (setting.microphoneState) {
+  //       stream = await window.navigator.mediaDevices.getUserMedia({
+  //         audio:{
+  //           echoCancellation:true,
+  //           noiseSuppression:true,
+  //         }
+  //       });
+  //       connectSendTransport(stream.getAudioTracks()[0], "audio");
+  //     } else {
+  //       stream?.getAudioTracks().map((e) => e.stop());
+  //     }
+  //   };
+  //   audioManager()
+  // }, [setting.microphoneState]);
+
+  // useEffect(() => {
+  //   VideoManager(setting);
+  // }, [setting]);
 
   return (
     <AnimatePresence>
@@ -88,18 +152,28 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
         </motion.div>
       ) : (
         <section className="w-full h-screen bg-[#202124] flex flex-col">
-          {false && (
+          {meetDetails?.settings.access == "open" && (
             <div className="topbar py-2 px-6 flex">
               <div
-                onClick={(e) =>
-                  socket?.emit("asking-join", { user: session.data?.user })
-                }
+                // onClick={(e) =>
+                //   callevent("ask-join", {
+                //     user: session.data?.user,
+                //     roomName: roomId,
+                //   })
+                // }
                 className="viewers bg-[#f4bc16] p-2 flex items-center justify-center rounded-md"
               >
                 <BiSolidBuildings className="text-xl" />
               </div>
             </div>
           )}
+          <button
+            // onClick={(e) => VideoManager(setting)}
+            onClick={(e) => sendVideo()}
+            className="text-white px-5 py-2 bg-gray-600 rounded-full self-center my-2 cursor-pointer"
+          >
+            send
+          </button>
           <motion.div
             layout
             className="responsive-area flex-1 p-2 w-full flex gap-2"
@@ -116,17 +190,6 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
               className="rightArea w-[350px] h-full bg-white rounded-lg flex-shrink-0"
             ></motion.div>
           </motion.div>
-          <div
-            onClick={(e) =>
-              callevent("ask-join", {
-                user: session.data?.user,
-                roomName: roomId,
-              })
-            }
-            className="viewers bg-[#f4bc16] p-2 flex items-center justify-center rounded-md"
-          >
-            <BiSolidBuildings className="text-xl" />
-          </div>
           <BottomBar />
         </section>
       )}

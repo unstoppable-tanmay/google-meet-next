@@ -32,24 +32,43 @@ export type RoomSettings = {
 };
 
 export type PeerDetailsType = {
+  socketId?: string;
+
   name: string;
   email: string;
   image?: string;
 
-  isAdmin: boolean;
+  audio: boolean;
+  video: boolean;
+  screen: boolean;
 
-  audio?: boolean;
-  video?: boolean;
-  screen?: boolean;
-
-  hand?: boolean;
+  hand: boolean;
 };
 
+export type AdminType = {
+  name: string;
+  email: string;
+  image?: string;
+}
+
 export type MeetType = {
-  router: Router | null;
   peers: PeerDetailsType[];
-  admin: PeerDetailsType;
+  admin: AdminType;
   settings: RoomSettings;
   started: boolean;
   expire: number;
 };
+
+export type SettingType = {
+  microphone: MediaDeviceInfo | undefined;
+  speaker: MediaDeviceInfo | undefined;
+  camera: MediaDeviceInfo | undefined;
+  screen: MediaDeviceInfo | undefined;
+  sendLogs: boolean;
+  leaveEmptyCalls: boolean;
+  cameraState: boolean;
+  microphoneState: boolean;
+  screenState: boolean;
+  caption: boolean;
+  emojies: boolean;
+}

@@ -1,4 +1,4 @@
-import { UserSocketType } from "@/types/types";
+import { SettingType, UserSocketType } from "@/types/types";
 import { Device } from "mediasoup-client";
 import { Consumer } from "mediasoup-client/lib/Consumer";
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
@@ -20,19 +20,7 @@ export const settingsState = atom({
   default: false,
 });
 
-export const settings = atom<{
-  microphone: MediaDeviceInfo | undefined;
-  speaker: MediaDeviceInfo | undefined;
-  camera: MediaDeviceInfo | undefined;
-  screen: MediaDeviceInfo | undefined;
-  sendLogs: boolean;
-  leaveEmptyCalls: boolean;
-  cameraState: boolean;
-  microphoneState: boolean;
-  screenState: boolean;
-  caption: boolean;
-  emojies: boolean;
-}>({
+export const settings = atom<SettingType>({
   key: "settings",
   default: {
     microphone: undefined,
@@ -47,7 +35,7 @@ export const settings = atom<{
     caption: false,
     emojies: false,
   },
-  effects_UNSTABLE: [persistAtom],
+  // effects_UNSTABLE: [persistAtom],
 });
 
 export const mediaDevices = atom<{

@@ -6,7 +6,7 @@ import { Transport } from "mediasoup-client/lib/Transport";
 import { Socket, io } from "socket.io-client";
 import { params } from "@/lib/constants";
 import { SetterOrUpdater } from "recoil";
-import { PeerDetailsType, UserSocketType } from "@/types/types";
+import { MeetType, PeerDetailsType, UserSocketType } from "@/types/types";
 
 let device: Device;
 let producerTransport: Transport;
@@ -23,12 +23,24 @@ export const joinRoom = (
   roomId: string,
   setTracks: SetterOrUpdater<UserSocketType[]>,
   peerDetails: PeerDetailsType,
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setMeetDetails: SetterOrUpdater<MeetType | null>
 ) => {
-  socket!.emit("joinRoom", { roomName: roomId, peerDetails }, (data: any) => {
-    setLoading(false);
-    createDevice(socket, data.rtpCapabilities, setTracks);
-  });
+  socket!.emit(
+    "joinRoom",
+    { roomName: roomId, peerDetails },
+    ({
+      rtpCapabilities,
+      meetDetails,
+    }: {
+      rtpCapabilities: RtpCapabilities;
+      meetDetails: MeetType;
+    }) => {
+      setMeetDetails(meetDetails);
+      setLoading(false);
+      createDevice(socket, rtpCapabilities, setTracks);
+    }
+  );
 
   socket!.on("new-producer", ({ producerId }) =>
     signalNewConsumerTransport(producerId, device, socket, setTracks)
@@ -227,7 +239,7 @@ const connectRecvTransport = async (
         producerId: params.producerId,
         kind: params.kind,
         rtpParameters: params.rtpParameters,
-        appData: params.appData
+        appData: params.appData,
       });
 
       consumerTransports = [
@@ -246,7 +258,7 @@ const connectRecvTransport = async (
 
       setTracks((prev) => [
         ...prev,
-        { name: "", socketId: "", tracks: track, image: "" },
+        { name: "", socketId: appData.socketId, tracks: track, image: "" },
       ]);
 
       socket!.emit("consumer-resume", {
@@ -256,25 +268,27 @@ const connectRecvTransport = async (
   );
 };
 
-const connectSendTransport = async (
+export const connectSendTransport = async (
   track: MediaStreamTrack,
   type: "video" | "audio" | "screen"
 ) => {
-  let mediaParams: ProducerOptions = { ...params, track: track };
+  if (track) {
+    let mediaParams: ProducerOptions = { ...params, track: track };
 
-  let mediaProducer = await producerTransport!.produce({
-    ...mediaParams,
-    appData: { data: "tanmay" },
-  });
+    let mediaProducer = await producerTransport!.produce({
+      ...mediaParams,
+      appData: { data: "tanmay" },
+    });
 
-  mediaProducer.on("trackended", () => {
-    console.log("video track ended");
-  });
+    mediaProducer.on("trackended", () => {
+      console.log("video track ended");
+    });
 
-  mediaProducer.on("transportclose", () => {
-    console.log("video transport ended");
-    mediaProducer.close();
-  });
+    mediaProducer.on("transportclose", () => {
+      console.log("video transport ended");
+      mediaProducer.close();
+    });
+  }
 };
 
 export const sendVideo = async () => {
@@ -293,6 +307,8 @@ export const sendVideo = async () => {
   });
 
   let track = stream.getVideoTracks();
+
+  track[0].enabled = false
 
   connectSendTransport(track[0], "video");
 };
