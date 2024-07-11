@@ -4,7 +4,6 @@ import { ProducerOptions } from "mediasoup-client/lib/Producer";
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Transport } from "mediasoup-client/lib/Transport";
 import { Socket, io } from "socket.io-client";
-import { params } from "@/lib/constants";
 import { SetterOrUpdater } from "recoil";
 import { MeetType, PeerDetailsType, UserSocketType } from "@/types/types";
 
@@ -258,7 +257,13 @@ const connectRecvTransport = async (
 
       setTracks((prev) => [
         ...prev,
-        { name: "", socketId: appData.socketId, tracks: track, image: "" },
+        {
+          name: "",
+          socketId: appData.socketId,
+          tracks: track,
+          image: "",
+          type: appData.type,
+        },
       ]);
 
       socket!.emit("consumer-resume", {
@@ -270,14 +275,16 @@ const connectRecvTransport = async (
 
 export const connectSendTransport = async (
   track: MediaStreamTrack,
-  type: "video" | "audio" | "screen"
+  type: "video" | "audio" | "screen",
+  socketId: string,
+  params: ProducerOptions
 ) => {
   if (track) {
     let mediaParams: ProducerOptions = { ...params, track: track };
 
     let mediaProducer = await producerTransport!.produce({
       ...mediaParams,
-      appData: { data: "tanmay" },
+      appData: { socketId, type },
     });
 
     mediaProducer.on("trackended", () => {
@@ -289,26 +296,4 @@ export const connectSendTransport = async (
       mediaProducer.close();
     });
   }
-};
-
-export const sendVideo = async () => {
-  const stream = await window.navigator.mediaDevices.getUserMedia({
-    audio: true,
-    video: {
-      width: {
-        min: 640,
-        max: 1920,
-      },
-      height: {
-        min: 400,
-        max: 1080,
-      },
-    },
-  });
-
-  let track = stream.getVideoTracks();
-
-  track[0].enabled = false
-
-  connectSendTransport(track[0], "video");
 };

@@ -11,7 +11,7 @@ import { Spinner } from "@nextui-org/react";
 import BottomBar from "./components/BottomBar";
 import VideoArea from "./components/VideoArea";
 
-import { connectSendTransport, joinRoom, sendVideo } from "@/lib/helper";
+import { connectSendTransport, joinRoom } from "@/lib/helper";
 
 import { BiSolidBuildings } from "react-icons/bi";
 import { useSession } from "next-auth/react";
@@ -23,7 +23,11 @@ import {
   UserType,
 } from "@/types/types";
 import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
-import { VideoManager } from "@/lib/transports-manager";
+import {
+  AudioManager,
+  ScreenManager,
+  VideoManager,
+} from "@/lib/transports-manager";
 
 const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
@@ -47,11 +51,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
   // Joining Logic
   useEffect(() => {
-    // const socket = io(`${process.env.NEXT_PUBLIC_SERVER_URL}/mediasoup`, {
-    //   transports: ["websocket"],
-    // });
-
-    if (socket) {
+    if (socket && session.status === "authenticated") {
       socket.emit("start-meet");
       console.log("joining");
       socket?.on("connection-success", ({ socketId }) => {
@@ -98,46 +98,20 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
         }
       );
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // useEffect(() => {
-  //   let stream: MediaStream | null;
-  //   const videoManager = async () => {
-  //     if (setting.cameraState) {
-  //       stream = await window.navigator.mediaDevices.getUserMedia({
-  //         video: {
-  //           noiseSuppression: true,
-  //         },
-  //       });
-  //       connectSendTransport(stream.getAudioTracks()[0], "video");
-  //     } else {
-  //       stream?.getAudioTracks().map((e) => e.stop());
-  //     }
-  //   };
-  //   videoManager();
-  // }, [setting.cameraState]);
+  useEffect(() => {
+    if (socket) VideoManager(setting.cameraState, socket);
+  }, [setting.cameraState, socket]);
 
-  // useEffect(() => {
-  //   let stream: MediaStream | null;
-  //   const audioManager = async () => {
-  //     if (setting.microphoneState) {
-  //       stream = await window.navigator.mediaDevices.getUserMedia({
-  //         audio:{
-  //           echoCancellation:true,
-  //           noiseSuppression:true,
-  //         }
-  //       });
-  //       connectSendTransport(stream.getAudioTracks()[0], "audio");
-  //     } else {
-  //       stream?.getAudioTracks().map((e) => e.stop());
-  //     }
-  //   };
-  //   audioManager()
-  // }, [setting.microphoneState]);
+  useEffect(() => {
+    if (socket) AudioManager(setting.microphoneState, socket);
+  }, [setting.microphoneState, socket]);
 
-  // useEffect(() => {
-  //   VideoManager(setting);
-  // }, [setting]);
+  useEffect(() => {
+    if (socket) ScreenManager(setting.screenState, socket);
+  }, [setting.screenState, socket]);
 
   return (
     <AnimatePresence>
@@ -167,13 +141,6 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
               </div>
             </div>
           )}
-          <button
-            // onClick={(e) => VideoManager(setting)}
-            onClick={(e) => sendVideo()}
-            className="text-white px-5 py-2 bg-gray-600 rounded-full self-center my-2 cursor-pointer"
-          >
-            send
-          </button>
           <motion.div
             layout
             className="responsive-area flex-1 p-2 w-full flex gap-2"

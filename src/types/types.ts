@@ -13,6 +13,7 @@ export type UserSocketType = {
   name: string;
   image?: string;
   tracks: MediaStreamTrack;
+  type: "audio" | "video" | "screen";
 };
 
 export interface ServerResponse<T> {
@@ -49,7 +50,7 @@ export type AdminType = {
   name: string;
   email: string;
   image?: string;
-}
+};
 
 export type MeetType = {
   peers: PeerDetailsType[];
@@ -71,4 +72,4 @@ export type SettingType = {
   screenState: boolean;
   caption: boolean;
   emojies: boolean;
-}
+};
