@@ -64,7 +64,7 @@ const User = ({ user }: { user: PeerDetailsType }) => {
         className="w-full h-full object-cover"
         ref={videoElement}
       ></video>
-      <audio autoPlay className="hidden"></audio>
+      <audio ref={audioElement} autoPlay className="hidden"></audio>
       {!user.audio && !user.video && (
         <div className="userImage w-[clamp(40px,60px,80px)] aspect-square rounded-full bg-white/20"></div>
       )}
