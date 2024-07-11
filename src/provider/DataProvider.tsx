@@ -4,20 +4,20 @@ import { Consumer } from "mediasoup-client/lib/Consumer";
 import { ProducerOptions } from "mediasoup-client/lib/Producer";
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Transport } from "mediasoup-client/lib/Transport";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { SetterOrUpdater } from "recoil";
 import { io, Socket } from "socket.io-client";
 
 interface DataContextProps {
-  device: Device | null;
-  producerTransport: Transport | null;
-  consumingTransports: string[];
-  consumerTransports: {
+  device: React.MutableRefObject<Device | null>;
+  producerTransport: React.MutableRefObject<Transport | null>;
+  consumingTransports: React.MutableRefObject<string[]>;
+  consumerTransports: React.MutableRefObject<{
     consumerTransport: Transport;
     serverConsumerTransportId: string;
     producerId: string;
     consumer: Consumer;
-  }[];
+  }[]>;
   joinRoom: (
     socket: Socket,
     roomId: string,
@@ -44,22 +44,16 @@ export const useData = (): DataContextProps => {
   return context;
 };
 
-export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [device, setDevice] = useState<Device | null>(null);
-  const [producerTransport, setProducerTransport] = useState<Transport | null>(
-    null
-  );
-  const [consumingTransports, setConsumingTransports] = useState<string[]>([]);
-  const [consumerTransports, setConsumerTransports] = useState<
-    {
-      consumerTransport: Transport;
-      serverConsumerTransportId: string;
-      producerId: string;
-      consumer: Consumer;
-    }[]
-  >([]);
+export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const device = useRef<Device | null>(null);
+  const producerTransport = useRef<Transport | null>(null);
+  const consumingTransports = useRef<string[]>([]);
+  const consumerTransports = useRef<{
+    consumerTransport: Transport;
+    serverConsumerTransportId: string;
+    producerId: string;
+    consumer: Consumer;
+  }[]>([]);
 
   const joinRoom = (
     socket: Socket,
@@ -69,37 +63,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setLoading: React.Dispatch<React.SetStateAction<boolean>>,
     setMeetDetails: SetterOrUpdater<MeetType | null>
   ) => {
-    socket!.emit(
+    socket.emit(
       "joinRoom",
       { roomName: roomId, peerDetails },
-      ({
-        rtpCapabilities,
-        meetDetails,
-      }: {
-        rtpCapabilities: RtpCapabilities;
-        meetDetails: MeetType;
-      }) => {
+      ({ rtpCapabilities, meetDetails }: { rtpCapabilities: RtpCapabilities; meetDetails: MeetType }) => {
         setMeetDetails(meetDetails);
         setLoading(false);
         createDevice(socket, rtpCapabilities, setTracks);
       }
     );
 
-    socket!.on("new-producer", ({ producerId }) =>
-      signalNewConsumerTransport(producerId, device!, socket, setTracks)
+    socket.on("new-producer", ({ producerId }) =>
+      signalNewConsumerTransport(producerId, socket, setTracks)
     );
 
-    socket!.on("producer-closed", ({ remoteProducerId }) => {
-      const producerToClose = consumerTransports.find(
+    socket.on("producer-closed", ({ remoteProducerId }) => {
+      const producerToClose = consumerTransports.current.find(
         (transportData) => transportData.producerId === remoteProducerId
       );
       producerToClose!.consumerTransport.close();
       producerToClose!.consumer.close();
 
-      setConsumerTransports(
-        consumerTransports.filter(
-          (transportData) => transportData.producerId !== remoteProducerId
-        )
+      consumerTransports.current = consumerTransports.current.filter(
+        (transportData) => transportData.producerId !== remoteProducerId
       );
     });
   };
@@ -110,27 +96,25 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     setTracks: SetterOrUpdater<UserSocketType[]>
   ) => {
     try {
-      setDevice(new Device());
+      device.current = new Device();
 
-      await device!.load({
+      await device.current.load({
         routerRtpCapabilities: rtpCapabilities,
       });
 
-      if (device!.loaded) createSendTransport(socket, device!, setTracks);
+      if (device.current.loaded) createSendTransport(socket, setTracks);
     } catch (error: any) {
       console.log(error);
-      if (error.name === "UnsupportedError")
-        console.warn("browser not supported");
+      if (error.name === "UnsupportedError") console.warn("browser not supported");
     }
   };
 
   const createSendTransport = (
     socket: Socket,
-    device: Device,
     setTracks: SetterOrUpdater<UserSocketType[]>
   ) => {
-    if (device.loaded)
-      socket!.emit(
+    if (device.current!.loaded)
+      socket.emit(
         "createWebRtcTransport",
         { consumer: false },
         async ({ params }: { params: any }) => {
@@ -139,18 +123,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
             return;
           }
 
-          console.log(device);
-
-          let locproducerTransport = device.createSendTransport({
+          let locProducerTransport = device.current!.createSendTransport({
             ...params,
             appData: { socketId: socket.id },
           });
 
-          locproducerTransport!.on(
+          locProducerTransport!.on(
             "connect",
             async ({ dtlsParameters }, callback, errback) => {
               try {
-                socket!.emit("transport-connect", {
+                socket.emit("transport-connect", {
                   dtlsParameters,
                 });
 
@@ -161,27 +143,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
             }
           );
 
-          locproducerTransport!.on(
+          locProducerTransport!.on(
             "produce",
             async (parameters, callback, errback) => {
               try {
-                socket!.emit(
+                socket.emit(
                   "transport-produce",
                   {
                     kind: parameters.kind,
                     rtpParameters: parameters.rtpParameters,
                     appData: parameters.appData,
                   },
-                  ({
-                    id,
-                    producersExist,
-                  }: {
-                    id: any;
-                    producersExist: any;
-                  }) => {
+                  ({ id, producersExist }: { id: any; producersExist: any }) => {
                     callback({ id });
 
-                    // if (producersExist) getProducers(socket, device, setTracks);
+                    if (producersExist) getProducers(socket, setTracks);
                   }
                 );
               } catch (error: any) {
@@ -189,36 +165,31 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
               }
             }
           );
-          getProducers(socket, device, setTracks);
+          getProducers(socket, setTracks);
 
-          //   producerTransport = locproducerTransport;
-          setProducerTransport(locproducerTransport);
+          producerTransport.current = locProducerTransport;
         }
       );
   };
 
   const getProducers = (
     socket: Socket,
-    device: Device,
     setTracks: SetterOrUpdater<UserSocketType[]>
   ) => {
-    socket!.emit("getProducers", (producerIds: string[]) => {
-      producerIds.forEach((e) =>
-        signalNewConsumerTransport(e, device, socket, setTracks)
-      );
+    socket.emit("getProducers", (producerIds: string[]) => {
+      producerIds.forEach((e) => signalNewConsumerTransport(e, socket, setTracks));
     });
   };
 
   const signalNewConsumerTransport = async (
     remoteProducerId: string,
-    device: Device,
     socket: Socket,
     setTracks: SetterOrUpdater<UserSocketType[]>
   ) => {
-    if (consumingTransports.includes(remoteProducerId)) return;
-    consumingTransports.push(remoteProducerId);
+    if (consumingTransports.current.includes(remoteProducerId)) return;
+    consumingTransports.current.push(remoteProducerId);
 
-    await socket!.emit(
+    await socket.emit(
       "createWebRtcTransport",
       { consumer: true },
       ({ params }: { params: any }) => {
@@ -226,12 +197,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
           console.log(params.error);
           return;
         }
-        console.log(`PARAMS... ${params}`);
 
         let consumerTransport;
         try {
-          console.log(device);
-          consumerTransport = device!.createRecvTransport(params);
+          consumerTransport = device.current!.createRecvTransport(params);
         } catch (error) {
           console.log(error);
           return;
@@ -241,7 +210,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
           "connect",
           async ({ dtlsParameters }, callback, errback) => {
             try {
-              socket!.emit("transport-recv-connect", {
+              socket.emit("transport-recv-connect", {
                 dtlsParameters,
                 serverConsumerTransportId: params.id,
               });
@@ -257,7 +226,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
           consumerTransport,
           remoteProducerId,
           params.id,
-          device,
           socket,
           setTracks
         );
@@ -269,14 +237,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     consumerTransport: Transport,
     remoteProducerId: string,
     serverConsumerTransportId: any,
-    device: Device,
     socket: Socket,
     setTracks: SetterOrUpdater<UserSocketType[]>
   ) => {
-    socket!.emit(
+    socket.emit(
       "consume",
       {
-        rtpCapabilities: device!.rtpCapabilities,
+        rtpCapabilities: device.current!.rtpCapabilities,
         remoteProducerId,
         serverConsumerTransportId,
       },
@@ -294,19 +261,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
           appData: params.appData,
         });
 
-        setConsumerTransports([
-          ...consumerTransports,
+        consumerTransports.current = [
+          ...consumerTransports.current,
           {
             consumerTransport,
             serverConsumerTransportId: params.id,
             producerId: remoteProducerId,
             consumer,
           },
-        ]);
+        ];
 
         const { track, appData } = consumer;
-
-        console.log("appData: ", appData);
 
         setTracks((prev) => [
           ...prev,
@@ -319,7 +284,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
           },
         ]);
 
-        socket!.emit("consumer-resume", {
+        socket.emit("consumer-resume", {
           serverConsumerId: params.serverConsumerId,
         });
       }
@@ -335,7 +300,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     if (track) {
       let mediaParams: ProducerOptions = { ...params, track: track };
 
-      let mediaProducer = await producerTransport!.produce({
+      let mediaProducer = await producerTransport.current!.produce({
         ...mediaParams,
         appData: { socketId, type },
       });

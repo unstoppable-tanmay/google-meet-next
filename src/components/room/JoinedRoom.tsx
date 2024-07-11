@@ -11,8 +11,6 @@ import { Spinner } from "@nextui-org/react";
 import BottomBar from "./components/BottomBar";
 import VideoArea from "./components/VideoArea";
 
-import { joinRoom } from "@/lib/helper";
-
 import { BiSolidBuildings } from "react-icons/bi";
 import { useSession } from "next-auth/react";
 import { useSocket } from "@/provider/SocketContext";
@@ -28,10 +26,12 @@ import {
   ScreenManager,
   VideoManager,
 } from "@/lib/transports-manager";
+import { useData } from "@/provider/DataProvider";
 
 const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
   const { socket } = useSocket();
+  const { joinRoom, connectSendTransport } = useData();
 
   // whole session join
   const [join, setJoin] = useRecoilState(joined);
@@ -108,16 +108,18 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
   }, []);
 
   useEffect(() => {
-    if (socket) VideoManager(setting.cameraState, socket);
-  }, [setting.cameraState, socket]);
+    if (socket) VideoManager(setting.cameraState, socket, connectSendTransport);
+  }, [setting.cameraState, socket, connectSendTransport]);
 
   useEffect(() => {
-    if (socket) AudioManager(setting.microphoneState, socket);
-  }, [setting.microphoneState, socket]);
+    if (socket)
+      AudioManager(setting.microphoneState, socket, connectSendTransport);
+  }, [setting.microphoneState, socket, connectSendTransport]);
 
   useEffect(() => {
-    if (socket) ScreenManager(setting.screenState, socket);
-  }, [setting.screenState, socket]);
+    if (socket)
+      ScreenManager(setting.screenState, socket, connectSendTransport);
+  }, [setting.screenState, socket, connectSendTransport]);
 
   return (
     <AnimatePresence>

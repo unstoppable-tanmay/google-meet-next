@@ -1,5 +1,4 @@
 import { SettingType } from "@/types/types";
-import { connectSendTransport } from "./helper";
 import { Socket } from "socket.io-client";
 import { audio_params, video_params } from "./constants";
 
@@ -7,7 +6,7 @@ let videoTrack: MediaStreamTrack | null = null;
 let audioTrack: MediaStreamTrack | null = null;
 let screenTrack: MediaStreamTrack | null = null;
 
-export const VideoManager = async (setting: boolean, socket: Socket) => {
+export const VideoManager = async (setting: boolean, socket: Socket,connectSendTransport:any) => {
   if (setting) {
     if (!videoTrack) {
       const stream = await window.navigator.mediaDevices.getUserMedia({
@@ -35,7 +34,7 @@ export const VideoManager = async (setting: boolean, socket: Socket) => {
   }
 };
 
-export const AudioManager = async (setting: boolean, socket: Socket) => {
+export const AudioManager = async (setting: boolean, socket: Socket,connectSendTransport:any) => {
   if (setting) {
     if (!audioTrack) {
       const stream = await window.navigator.mediaDevices.getUserMedia({
@@ -56,7 +55,7 @@ export const AudioManager = async (setting: boolean, socket: Socket) => {
   }
 };
 
-export const ScreenManager = async (setting: boolean, socket: Socket) => {
+export const ScreenManager = async (setting: boolean, socket: Socket,connectSendTransport:any) => {
   if (setting) {
     if (!screenTrack) {
       const stream = await window.navigator.mediaDevices.getDisplayMedia({
