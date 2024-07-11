@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Socket, io } from "socket.io-client";
 
 import { useRecoilState } from "recoil";
-import { joined, settings, tracksAtom } from "@/state/atom";
+import { joined, rightBoxAtom, settings, tracksAtom } from "@/state/atom";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Spinner } from "@nextui-org/react";
@@ -11,7 +11,7 @@ import { Spinner } from "@nextui-org/react";
 import BottomBar from "./components/BottomBar";
 import VideoArea from "./components/VideoArea";
 
-import { connectSendTransport, joinRoom } from "@/lib/helper";
+import { joinRoom } from "@/lib/helper";
 
 import { BiSolidBuildings } from "react-icons/bi";
 import { useSession } from "next-auth/react";
@@ -35,6 +35,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
   // whole session join
   const [join, setJoin] = useRecoilState(joined);
+  const [rightBox, setRightBoxAtom] = useRecoilState(rightBoxAtom);
 
   const [tracks, setTracks] = useRecoilState(tracksAtom);
 
@@ -82,6 +83,11 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
         }
       );
 
+      // Room Settings Update
+      socket.on("room-update", ({ room }: { room: MeetType }) => {
+        setMeetDetails(room);
+      });
+
       socket.on(
         "new-join",
         ({
@@ -98,7 +104,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
         }
       );
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -149,9 +155,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
             <motion.div
               initial={{ marginRight: "-358px" }}
               animate={
-                setting.cameraState
-                  ? { marginRight: "0%" }
-                  : { marginRight: "-358px" }
+                rightBox ? { marginRight: "0%" } : { marginRight: "-358px" }
               }
               transition={{ type: "spring", bounce: 0.1, duration: 0.4 }}
               className="rightArea w-[350px] h-full bg-white rounded-lg flex-shrink-0"

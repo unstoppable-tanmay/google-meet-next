@@ -38,6 +38,11 @@ export const settings = atom<SettingType>({
   // effects_UNSTABLE: [persistAtom],
 });
 
+export const rightBoxAtom = atom<boolean>({
+  key: "rightBoxAtom",
+  default: false,
+});
+
 export const mediaDevices = atom<{
   microphone: { value: MediaDeviceInfo; label: string }[];
   speaker: { value: MediaDeviceInfo; label: string }[];
