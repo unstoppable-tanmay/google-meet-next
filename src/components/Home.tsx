@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { ServerResponse } from "@/types/types";
 import { useSession } from "next-auth/react";
-import { socketInitializer } from "@/lib/helper";
 
 const Home = () => {
   const session = useSession();

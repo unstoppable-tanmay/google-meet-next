@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { useSocket } from "@/provider/SocketContext";
 import { tracksAtom } from "@/state/atom";
 import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
@@ -33,6 +34,7 @@ export default VideoArea;
 const User = ({ user }: { user: PeerDetailsType }) => {
   const [tracks, setTracks] = useRecoilState(tracksAtom);
   const videoElement = useRef<HTMLVideoElement>(null);
+  const screenElement = useRef<HTMLVideoElement>(null);
   const audioElement = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -57,17 +59,45 @@ const User = ({ user }: { user: PeerDetailsType }) => {
     }
   }, [tracks, user]);
 
+  useEffect(() => {
+    console.log(tracks, user.socketId);
+    if (tracks.find((e) => e.socketId == user.socketId && e.type == "screen")) {
+      screenElement.current!.srcObject = new MediaStream([
+        tracks.find(
+          (track) => track.socketId == user.socketId && track.type == "screen"
+        )?.tracks!,
+      ]);
+    }
+  }, [tracks, user]);
+
   return (
-    <div className="rounded-xl bg-[#3c4043] flex items-center justify-center max-w-[300px] aspect-square overflow-hidden">
-      <video
-        autoPlay
-        className="w-full h-full object-cover"
-        ref={videoElement}
-      ></video>
-      <audio ref={audioElement} autoPlay className="hidden"></audio>
-      {!user.audio && !user.video && (
-        <div className="userImage w-[clamp(40px,60px,80px)] aspect-square rounded-full bg-white/20"></div>
+    <>
+      <div className="rounded-xl bg-[#3c4043] flex items-center justify-center max-w-[300px] aspect-square overflow-hidden">
+        <video
+          autoPlay
+          className="w-full h-full object-cover"
+          style={{ display: user.video ? "block" : "none" }}
+          ref={videoElement}
+        ></video>
+        <audio ref={audioElement} autoPlay className="hidden"></audio>
+        {!user.audio && !user.video && (
+          <div className="userImage w-[clamp(40px,60px,80px)] aspect-square rounded-full bg-white/20">
+            {user.image ? <img src={user.image} alt="" /> : user.name[0]}
+          </div>
+        )}
+        {user.video + "-" + user.audio}
+      </div>
+      {user.screen && (
+        <div className="rounded-xl bg-[#3c4043] flex items-center justify-center max-w-[300px] aspect-square overflow-hidden">
+          <video
+            autoPlay
+            className="w-full h-full object-cover"
+            style={{ display: user.video ? "block" : "none" }}
+            ref={screenElement}
+          ></video>
+          {user.video + "-" + user.audio}
+        </div>
       )}
-    </div>
+    </>
   );
 };

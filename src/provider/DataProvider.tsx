@@ -4,7 +4,13 @@ import { Consumer } from "mediasoup-client/lib/Consumer";
 import { ProducerOptions } from "mediasoup-client/lib/Producer";
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Transport } from "mediasoup-client/lib/Transport";
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { SetterOrUpdater } from "recoil";
 import { io, Socket } from "socket.io-client";
 
@@ -12,12 +18,14 @@ interface DataContextProps {
   device: React.MutableRefObject<Device | null>;
   producerTransport: React.MutableRefObject<Transport | null>;
   consumingTransports: React.MutableRefObject<string[]>;
-  consumerTransports: React.MutableRefObject<{
-    consumerTransport: Transport;
-    serverConsumerTransportId: string;
-    producerId: string;
-    consumer: Consumer;
-  }[]>;
+  consumerTransports: React.MutableRefObject<
+    {
+      consumerTransport: Transport;
+      serverConsumerTransportId: string;
+      producerId: string;
+      consumer: Consumer;
+    }[]
+  >;
   joinRoom: (
     socket: Socket,
     roomId: string,
@@ -44,16 +52,20 @@ export const useData = (): DataContextProps => {
   return context;
 };
 
-export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const device = useRef<Device | null>(null);
   const producerTransport = useRef<Transport | null>(null);
   const consumingTransports = useRef<string[]>([]);
-  const consumerTransports = useRef<{
-    consumerTransport: Transport;
-    serverConsumerTransportId: string;
-    producerId: string;
-    consumer: Consumer;
-  }[]>([]);
+  const consumerTransports = useRef<
+    {
+      consumerTransport: Transport;
+      serverConsumerTransportId: string;
+      producerId: string;
+      consumer: Consumer;
+    }[]
+  >([]);
 
   const joinRoom = (
     socket: Socket,
@@ -66,8 +78,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     socket.emit(
       "joinRoom",
       { roomName: roomId, peerDetails },
-      ({ rtpCapabilities, meetDetails }: { rtpCapabilities: RtpCapabilities; meetDetails: MeetType }) => {
+      ({
+        rtpCapabilities,
+        meetDetails,
+      }: {
+        rtpCapabilities: RtpCapabilities;
+        meetDetails: MeetType;
+      }) => {
         setMeetDetails(meetDetails);
+        console.log(meetDetails);
         setLoading(false);
         createDevice(socket, rtpCapabilities, setTracks);
       }
@@ -105,7 +124,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (device.current.loaded) createSendTransport(socket, setTracks);
     } catch (error: any) {
       console.log(error);
-      if (error.name === "UnsupportedError") console.warn("browser not supported");
+      if (error.name === "UnsupportedError")
+        console.warn("browser not supported");
     }
   };
 
@@ -154,7 +174,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     rtpParameters: parameters.rtpParameters,
                     appData: parameters.appData,
                   },
-                  ({ id, producersExist }: { id: any; producersExist: any }) => {
+                  ({
+                    id,
+                    producersExist,
+                  }: {
+                    id: any;
+                    producersExist: any;
+                  }) => {
                     callback({ id });
 
                     if (producersExist) getProducers(socket, setTracks);
@@ -177,7 +203,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTracks: SetterOrUpdater<UserSocketType[]>
   ) => {
     socket.emit("getProducers", (producerIds: string[]) => {
-      producerIds.forEach((e) => signalNewConsumerTransport(e, socket, setTracks));
+      producerIds.forEach((e) =>
+        signalNewConsumerTransport(e, socket, setTracks)
+      );
     });
   };
 

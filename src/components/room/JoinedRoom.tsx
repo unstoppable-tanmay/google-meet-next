@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from "react";
 
 import { Socket, io } from "socket.io-client";
@@ -84,8 +85,15 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
       );
 
       // Room Settings Update
-      socket.on("room-update", ({ room }: { room: MeetType }) => {
-        setMeetDetails(room);
+      socket.on("peer-update", ({ peer }: { peer: PeerDetailsType }) => {
+        console.log(peer)
+        if (peer && meetDetails)
+          setMeetDetails({
+            ...meetDetails,
+            peers: meetDetails?.peers.map((e) =>
+              e.socketId === peer.socketId ? peer : e
+            ),
+          });
       });
 
       socket.on(
@@ -104,22 +112,46 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
         }
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (socket) VideoManager(setting.cameraState, socket, connectSendTransport);
-  }, [setting.cameraState, socket, connectSendTransport]);
+    if (socket) {
+      VideoManager(setting.cameraState, socket, connectSendTransport);
+      socket?.emit("peer-update", {
+        peer: {
+          ...meetDetails?.peers.find((e) => e.socketId == socket.id),
+          video: setting.cameraState,
+        } as PeerDetailsType,
+        roomName: roomId,
+      });
+    }
+  }, [setting.cameraState, socket]);
 
   useEffect(() => {
-    if (socket)
+    if (socket) {
       AudioManager(setting.microphoneState, socket, connectSendTransport);
-  }, [setting.microphoneState, socket, connectSendTransport]);
+      socket?.emit("peer-update", {
+        peer: {
+          ...meetDetails?.peers.find((e) => e.socketId == socket.id),
+          audio: setting.microphoneState,
+        } as PeerDetailsType,
+        roomName: roomId,
+      });
+    }
+  }, [setting.microphoneState, socket]);
 
   useEffect(() => {
-    if (socket)
+    if (socket) {
       ScreenManager(setting.screenState, socket, connectSendTransport);
-  }, [setting.screenState, socket, connectSendTransport]);
+      socket?.emit("peer-update", {
+        peer: {
+          ...meetDetails?.peers.find((e) => e.socketId == socket.id),
+          screen: setting.screenState,
+        } as PeerDetailsType,
+        roomName: roomId,
+      });
+    }
+  }, [setting.screenState, socket]);
 
   return (
     <AnimatePresence>
@@ -134,7 +166,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
         </motion.div>
       ) : (
         <section className="w-full h-screen bg-[#202124] flex flex-col">
-          {meetDetails?.settings.access == "open" && (
+          {meetDetails?.settings?.access == "open" && (
             <div className="topbar py-2 px-6 flex">
               <div
                 // onClick={(e) =>
