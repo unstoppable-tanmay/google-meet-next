@@ -1,21 +1,52 @@
 /* eslint-disable @next/next/no-img-element */
 import { useSocket } from "@/provider/SocketContext";
-import { tracksAtom } from "@/state/atom";
+import { settings, tracksAtom } from "@/state/atom";
 import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
 import { PeerDetailsType, UserSocketType } from "@/types/types";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
 import React, { useEffect, useRef } from "react";
 import { useRecoilState } from "recoil";
 
 const VideoArea = () => {
   const { socket } = useSocket();
+  const session = useSession();
   const [meetDetails, setMeetDetails] = useRecoilState(meetDetailsAtom);
+  const [setting, setSettings] = useRecoilState(settings);
+
+  const myVideoElement = useRef<HTMLVideoElement>(null);
+  const myScreenElement = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    console.log(meetDetails);
+  }, [meetDetails]);
 
   return (
     <motion.section
       layout
       className="flex-1 h-full p-1 rounded-lg flex items-center justify-center"
     >
+      <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden">
+        <video
+          autoPlay
+          className="w-full h-full object-cover"
+          style={{ display: setting.cameraState ? "block" : "none" }}
+          ref={myVideoElement}
+        ></video>
+        {!setting.cameraState && (
+          <div className="userImage w-[clamp(40px,60px,80px)] aspect-square rounded-full bg-white/20">
+            {session.data?.user?.image ? (
+              <img
+                src={session.data?.user?.image}
+                alt=""
+                className="w-full h-full object-cover rounded-full"
+              />
+            ) : (
+              session.data?.user?.name && session.data?.user?.name[0]
+            )}
+          </div>
+        )}
+      </div>
       <div className="video-section overflow-hidden w-full h-full flex items-center justify-center gap-6">
         {meetDetails?.peers.map((user, index) => {
           return user.socketId != socket?.id ? (
@@ -72,7 +103,7 @@ const User = ({ user }: { user: PeerDetailsType }) => {
 
   return (
     <>
-      <div className="rounded-xl bg-[#3c4043] flex items-center justify-center max-w-[300px] aspect-square overflow-hidden">
+      <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden">
         <video
           autoPlay
           className="w-full h-full object-cover"
@@ -80,12 +111,19 @@ const User = ({ user }: { user: PeerDetailsType }) => {
           ref={videoElement}
         ></video>
         <audio ref={audioElement} autoPlay className="hidden"></audio>
-        {!user.audio && !user.video && (
-          <div className="userImage w-[clamp(40px,60px,80px)] aspect-square rounded-full bg-white/20">
-            {user.image ? <img src={user.image} alt="" /> : user.name[0]}
+        {!user.video && (
+          <div className="userImage w-[clamp(40px,60px,80px)] flex items-center justify-center text-white aspect-square rounded-full bg-white/20">
+            {user.image ? (
+              <img
+                src={user.image}
+                alt=""
+                className="w-full h-full object-cover rounded-full"
+              />
+            ) : (
+              user.name[0]
+            )}
           </div>
         )}
-        {user.video + "-" + user.audio}
       </div>
       {user.screen && (
         <div className="rounded-xl bg-[#3c4043] flex items-center justify-center max-w-[300px] aspect-square overflow-hidden">

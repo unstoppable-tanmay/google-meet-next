@@ -85,15 +85,8 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
       );
 
       // Room Settings Update
-      socket.on("peer-update", ({ peer }: { peer: PeerDetailsType }) => {
-        console.log(peer)
-        if (peer && meetDetails)
-          setMeetDetails({
-            ...meetDetails,
-            peers: meetDetails?.peers.map((e) =>
-              e.socketId === peer.socketId ? peer : e
-            ),
-          });
+      socket.on("meet-update", ({ meet }: { meet: MeetType }) => {
+        setMeetDetails(meet);
       });
 
       socket.on(
@@ -117,12 +110,10 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
   useEffect(() => {
     if (socket) {
       VideoManager(setting.cameraState, socket, connectSendTransport);
-      socket?.emit("peer-update", {
-        peer: {
-          ...meetDetails?.peers.find((e) => e.socketId == socket.id),
-          video: setting.cameraState,
-        } as PeerDetailsType,
+      socket?.emit("user-update", {
+        socketId: socket.id,
         roomName: roomId,
+        data: { video: setting.cameraState } as Partial<PeerDetailsType>,
       });
     }
   }, [setting.cameraState, socket]);
@@ -130,12 +121,10 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
   useEffect(() => {
     if (socket) {
       AudioManager(setting.microphoneState, socket, connectSendTransport);
-      socket?.emit("peer-update", {
-        peer: {
-          ...meetDetails?.peers.find((e) => e.socketId == socket.id),
-          audio: setting.microphoneState,
-        } as PeerDetailsType,
+      socket?.emit("user-update", {
+        socketId: socket.id,
         roomName: roomId,
+        data: { audio: setting.microphoneState } as Partial<PeerDetailsType>,
       });
     }
   }, [setting.microphoneState, socket]);
@@ -143,12 +132,10 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
   useEffect(() => {
     if (socket) {
       ScreenManager(setting.screenState, socket, connectSendTransport);
-      socket?.emit("peer-update", {
-        peer: {
-          ...meetDetails?.peers.find((e) => e.socketId == socket.id),
-          screen: setting.screenState,
-        } as PeerDetailsType,
+      socket?.emit("user-update", {
+        socketId: socket.id,
         roomName: roomId,
+        data: { screen: setting.screenState } as Partial<PeerDetailsType>,
       });
     }
   }, [setting.screenState, socket]);
