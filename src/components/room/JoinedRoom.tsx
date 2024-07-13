@@ -1,8 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from "react";
 
-import { Socket, io } from "socket.io-client";
-
 import { useRecoilState } from "recoil";
 import { joined, rightBoxAtom, settings, tracksAtom } from "@/state/atom";
 
@@ -22,17 +20,18 @@ import {
   UserType,
 } from "@/types/types";
 import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
-import {
-  AudioManager,
-  ScreenManager,
-  VideoManager,
-} from "@/lib/transports-manager";
 import { useData } from "@/provider/DataProvider";
 
 const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
   const { socket } = useSocket();
-  const { joinRoom, connectSendTransport } = useData();
+  const {
+    joinRoom,
+    connectSendTransport,
+    VideoManager,
+    AudioManager,
+    ScreenManager,
+  } = useData();
 
   // whole session join
   const [join, setJoin] = useRecoilState(joined);

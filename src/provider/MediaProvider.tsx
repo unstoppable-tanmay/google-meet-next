@@ -1,7 +1,7 @@
 import { MeetType, PeerDetailsType, UserSocketType } from "@/types/types";
 import { Device } from "mediasoup-client";
 import { Consumer } from "mediasoup-client/lib/Consumer";
-import { Producer, ProducerOptions } from "mediasoup-client/lib/Producer";
+import { ProducerOptions } from "mediasoup-client/lib/Producer";
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Transport } from "mediasoup-client/lib/Transport";
 import React, {
@@ -13,7 +13,6 @@ import React, {
 } from "react";
 import { SetterOrUpdater } from "recoil";
 import { io, Socket } from "socket.io-client";
-import { audio_params, video_params } from "../lib/constants";
 
 interface DataContextProps {
   device: React.MutableRefObject<Device | null>;
@@ -43,21 +42,6 @@ interface DataContextProps {
     socketId: string,
     params: ProducerOptions
   ) => Promise<void>;
-  VideoManager: (
-    setting: boolean,
-    socket: Socket,
-    connectSendTransport: any
-  ) => Promise<void>;
-  AudioManager: (
-    setting: boolean,
-    socket: Socket,
-    connectSendTransport: any
-  ) => Promise<void>;
-  ScreenManager: (
-    setting: boolean,
-    socket: Socket,
-    connectSendTransport: any
-  ) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -73,23 +57,6 @@ export const useData = (): DataContextProps => {
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const videoStream = useRef<MediaStream | null>(null);
-  const audioStream = useRef<MediaStream | null>(null);
-  const screenStream = useRef<MediaStream | null>(null);
-
-  const videoProducer = useRef<Producer<{
-    socketId: string;
-    type: "video" | "audio" | "screen";
-  }> | null>(null);
-  const audioProducer = useRef<Producer<{
-    socketId: string;
-    type: "video" | "audio" | "screen";
-  }> | null>(null);
-  const screenProducer = useRef<Producer<{
-    socketId: string;
-    type: "video" | "audio" | "screen";
-  }> | null>(null);
-
   const device = useRef<Device | null>(null);
   const producerTransport = useRef<Transport | null>(null);
   const consumingTransports = useRef<string[]>([]);
@@ -383,93 +350,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const VideoManager = async (
-    setting: boolean,
-    socket: Socket,
-    connectSendTransport: any
-  ) => {
-    if (setting) {
-      if (!videoProducer.current) {
-        videoStream.current = await window.navigator.mediaDevices.getUserMedia({
-          video: {
-            width: {
-              min: 640,
-              max: 1920,
-            },
-            height: {
-              min: 400,
-              max: 1080,
-            },
-            noiseSuppression: true,
-          },
-        });
-
-        connectSendTransport(
-          videoStream.current.getVideoTracks()[0],
-          "video",
-          socket.id!,
-          video_params
-        );
-      } else {
-        videoProducer.current.resume();
-      }
-    } else {
-      videoProducer.current?.pause();
-    }
-  };
-  const AudioManager = async (
-    setting: boolean,
-    socket: Socket,
-    connectSendTransport: any
-  ) => {
-    if (setting) {
-      if (!audioProducer.current) {
-        audioStream.current = await window.navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-          },
-        });
-
-        connectSendTransport(
-          audioStream.current.getAudioTracks()[0],
-          "audio",
-          socket.id!,
-          audio_params
-        );
-      } else {
-        audioProducer.current.resume();
-      }
-    } else {
-      audioProducer.current?.pause();
-    }
-  };
-  const ScreenManager = async (
-    setting: boolean,
-    socket: Socket,
-    connectSendTransport: any
-  ) => {
-    if (setting) {
-      if (!screenProducer.current) {
-        screenStream.current =
-          await window.navigator.mediaDevices.getDisplayMedia({
-            video: true,
-          });
-
-        connectSendTransport(
-          screenStream.current.getVideoTracks()[0],
-          "video",
-          socket.id!,
-          video_params
-        );
-      } else {
-        screenProducer.current.resume();
-      }
-    } else {
-      screenProducer.current?.pause();
-    }
-  };
-
   return (
     <DataContext.Provider
       value={{
@@ -479,9 +359,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
         consumerTransports,
         joinRoom,
         connectSendTransport,
-        VideoManager,
-        AudioManager,
-        ScreenManager,
       }}
     >
       {children}

@@ -42,7 +42,6 @@ const BottomBar = () => {
           <SmallButtons
             on={setting.microphoneState}
             onClick={(e) => {
-              console.log(setting.microphoneState);
               setSettings((prev) => ({
                 ...prev,
                 microphoneState: !setting.microphoneState,
@@ -55,7 +54,6 @@ const BottomBar = () => {
           <SmallButtons
             on={setting.cameraState}
             onClick={(e) => {
-              console.log(setting.cameraState);
               setSettings((prev) => ({
                 ...prev,
                 cameraState: !setting.cameraState,
@@ -69,7 +67,6 @@ const BottomBar = () => {
             on={setting.caption}
             onColor="#87b3f8"
             onClick={(e) => {
-              console.log(setting.caption);
               setSettings((prev) => ({
                 ...prev,
                 caption: !setting.caption,
@@ -82,7 +79,6 @@ const BottomBar = () => {
             on={setting.emojies}
             onColor="#87b3f8"
             onClick={(e) => {
-              console.log(setting.emojies);
               setSettings((prev) => ({
                 ...prev,
                 emojies: !setting.emojies,
@@ -95,7 +91,6 @@ const BottomBar = () => {
             on={setting.screenState}
             onColor="#87b3f8"
             onClick={(e) => {
-              console.log(setting.screenState);
               setSettings((prev) => ({
                 ...prev,
                 screenState: !setting.screenState,
