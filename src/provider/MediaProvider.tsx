@@ -1,367 +1,157 @@
-import { MeetType, PeerDetailsType, UserSocketType } from "@/types/types";
-import { Device } from "mediasoup-client";
-import { Consumer } from "mediasoup-client/lib/Consumer";
-import { ProducerOptions } from "mediasoup-client/lib/Producer";
-import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
-import { Transport } from "mediasoup-client/lib/Transport";
 import React, {
   createContext,
-  useContext,
-  useEffect,
   useRef,
+  useContext,
+  ReactNode,
+  useCallback,
+  useEffect,
   useState,
 } from "react";
-import { SetterOrUpdater } from "recoil";
-import { io, Socket } from "socket.io-client";
 
-interface DataContextProps {
-  device: React.MutableRefObject<Device | null>;
-  producerTransport: React.MutableRefObject<Transport | null>;
-  consumingTransports: React.MutableRefObject<string[]>;
-  consumerTransports: React.MutableRefObject<
-    {
-      consumerTransport: Transport;
-      serverConsumerTransportId: string;
-      producerId: string;
-      consumer: Consumer;
-      socketId: string;
-      serverConsumerId: string;
-    }[]
-  >;
-  joinRoom: (
-    socket: Socket,
-    roomId: string,
-    setTracks: SetterOrUpdater<UserSocketType[]>,
-    peerDetails: PeerDetailsType,
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>,
-    setMeetDetails: SetterOrUpdater<MeetType | null>
-  ) => void;
-  connectSendTransport: (
-    track: MediaStreamTrack,
-    type: "video" | "audio" | "screen",
-    socketId: string,
-    params: ProducerOptions
-  ) => Promise<void>;
+interface MediaDevice {
+  value: MediaDeviceInfo;
+  label: string;
 }
 
-const DataContext = createContext<DataContextProps | undefined>(undefined);
+interface MediaStreamContextProps {
+  videoStream: MediaStream | null;
+  audioStream: MediaStream | null;
+  screenStream: MediaStream | null;
+  getVideoStream: () => Promise<void>;
+  getAudioStream: () => Promise<void>;
+  getScreenStream: () => Promise<void>;
+  stopVideoStream: () => void;
+  stopAudioStream: () => void;
+  stopScreenStream: () => void;
+  microphones: MediaDevice[];
+  speakers: MediaDevice[];
+  cameras: MediaDevice[];
+  screens: MediaDevice[];
+}
 
-export const useData = (): DataContextProps => {
-  const context = useContext(DataContext);
+const MediaStreamContext = createContext<MediaStreamContextProps | undefined>(
+  undefined
+);
+
+export const useMediaStream = (): MediaStreamContextProps => {
+  const context = useContext(MediaStreamContext);
   if (!context) {
-    throw new Error("useData must be used within a DataProvider");
+    throw new Error("useMediaStream must be used within a MediaStreamProvider");
   }
   return context;
 };
 
-export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const device = useRef<Device | null>(null);
-  const producerTransport = useRef<Transport | null>(null);
-  const consumingTransports = useRef<string[]>([]);
-  const consumerTransports = useRef<
-    {
-      consumerTransport: Transport;
-      serverConsumerTransportId: string;
-      producerId: string;
-      consumer: Consumer;
-      socketId: string;
-      serverConsumerId: string;
-    }[]
-  >([]);
+export const MediaStreamProvider = ({ children }: { children: ReactNode }) => {
+  const videoStreamRef = useRef<MediaStream | null>(null);
+  const audioStreamRef = useRef<MediaStream | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
 
-  const joinRoom = (
-    socket: Socket,
-    roomId: string,
-    setTracks: SetterOrUpdater<UserSocketType[]>,
-    peerDetails: PeerDetailsType,
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>,
-    setMeetDetails: SetterOrUpdater<MeetType | null>
-  ) => {
-    socket.emit(
-      "joinRoom",
-      { roomName: roomId, peerDetails },
-      ({
-        rtpCapabilities,
-        meetDetails,
-      }: {
-        rtpCapabilities: RtpCapabilities;
-        meetDetails: MeetType;
-      }) => {
-        setMeetDetails(meetDetails);
-        console.log(meetDetails);
-        setLoading(false);
-        createDevice(socket, rtpCapabilities, setTracks);
-      }
-    );
+  const [microphones, setMicrophones] = useState<MediaDevice[]>([]);
+  const [speakers, setSpeakers] = useState<MediaDevice[]>([]);
+  const [cameras, setCameras] = useState<MediaDevice[]>([]);
+  const [screens, setScreens] = useState<MediaDevice[]>([]);
 
-    socket.on("new-producer", ({ producerId }) =>
-      signalNewConsumerTransport(producerId, socket, setTracks)
-    );
-
-    socket.on("producer-closed", ({ remoteProducerId }) => {
-      const producerToClose = consumerTransports.current.find(
-        (transportData) => transportData.producerId === remoteProducerId
-      );
-      producerToClose!.consumerTransport.close();
-      producerToClose!.consumer.close();
-
-      consumerTransports.current = consumerTransports.current.filter(
-        (transportData) => transportData.producerId !== remoteProducerId
-      );
-    });
-  };
-
-  const createDevice = async (
-    socket: Socket,
-    rtpCapabilities: RtpCapabilities,
-    setTracks: SetterOrUpdater<UserSocketType[]>
-  ) => {
+  const getVideoStream = useCallback(async () => {
     try {
-      device.current = new Device();
-
-      await device.current.load({
-        routerRtpCapabilities: rtpCapabilities,
-      });
-
-      if (device.current.loaded) createSendTransport(socket, setTracks);
-    } catch (error: any) {
-      console.log(error);
-      if (error.name === "UnsupportedError")
-        console.warn("browser not supported");
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      videoStreamRef.current = stream;
+    } catch (error) {
+      console.error("Error accessing video stream:", error);
     }
-  };
+  }, []);
 
-  const createSendTransport = (
-    socket: Socket,
-    setTracks: SetterOrUpdater<UserSocketType[]>
-  ) => {
-    if (device.current!.loaded)
-      socket.emit(
-        "createWebRtcTransport",
-        { consumer: false },
-        async ({ params }: { params: any }) => {
-          if (params.error) {
-            console.log(params.error);
-            return;
-          }
-
-          let locProducerTransport = device.current!.createSendTransport({
-            ...params,
-            appData: { socketId: socket.id },
-          });
-
-          locProducerTransport!.on(
-            "connect",
-            async ({ dtlsParameters }, callback, errback) => {
-              try {
-                socket.emit("transport-connect", {
-                  dtlsParameters,
-                });
-
-                callback();
-              } catch (error: any) {
-                errback(error);
-              }
-            }
-          );
-
-          locProducerTransport!.on(
-            "produce",
-            async (parameters, callback, errback) => {
-              try {
-                socket.emit(
-                  "transport-produce",
-                  {
-                    kind: parameters.kind,
-                    rtpParameters: parameters.rtpParameters,
-                    appData: parameters.appData,
-                  },
-                  ({
-                    id,
-                    producersExist,
-                  }: {
-                    id: any;
-                    producersExist: any;
-                  }) => {
-                    callback({ id });
-
-                    if (producersExist) getProducers(socket, setTracks);
-                  }
-                );
-              } catch (error: any) {
-                errback(error);
-              }
-            }
-          );
-          getProducers(socket, setTracks);
-
-          producerTransport.current = locProducerTransport;
-        }
-      );
-  };
-
-  const getProducers = (
-    socket: Socket,
-    setTracks: SetterOrUpdater<UserSocketType[]>
-  ) => {
-    socket.emit("getProducers", (producerIds: string[]) => {
-      producerIds.forEach((e) =>
-        signalNewConsumerTransport(e, socket, setTracks)
-      );
-    });
-  };
-
-  const signalNewConsumerTransport = async (
-    remoteProducerId: string,
-    socket: Socket,
-    setTracks: SetterOrUpdater<UserSocketType[]>
-  ) => {
-    if (consumingTransports.current.includes(remoteProducerId)) return;
-    consumingTransports.current.push(remoteProducerId);
-
-    await socket.emit(
-      "createWebRtcTransport",
-      { consumer: true },
-      ({ params }: { params: any }) => {
-        if (params.error) {
-          console.log(params.error);
-          return;
-        }
-
-        let consumerTransport;
-        try {
-          consumerTransport = device.current!.createRecvTransport(params);
-        } catch (error) {
-          console.log(error);
-          return;
-        }
-
-        consumerTransport.on(
-          "connect",
-          async ({ dtlsParameters }, callback, errback) => {
-            try {
-              socket.emit("transport-recv-connect", {
-                dtlsParameters,
-                serverConsumerTransportId: params.id,
-              });
-
-              callback();
-            } catch (error: any) {
-              errback(error);
-            }
-          }
-        );
-
-        connectRecvTransport(
-          consumerTransport,
-          remoteProducerId,
-          params.id,
-          socket,
-          setTracks
-        );
-      }
-    );
-  };
-
-  const connectRecvTransport = async (
-    consumerTransport: Transport,
-    remoteProducerId: string,
-    serverConsumerTransportId: any,
-    socket: Socket,
-    setTracks: SetterOrUpdater<UserSocketType[]>
-  ) => {
-    socket.emit(
-      "consume",
-      {
-        rtpCapabilities: device.current!.rtpCapabilities,
-        remoteProducerId,
-        serverConsumerTransportId,
-      },
-      async ({ params }: { params: any }) => {
-        if (params.error) {
-          console.log("Cannot Consume");
-          return;
-        }
-
-        const consumer = await consumerTransport.consume({
-          id: params.id,
-          producerId: params.producerId,
-          kind: params.kind,
-          rtpParameters: params.rtpParameters,
-          appData: params.appData,
-        });
-
-        const { track, appData } = consumer;
-
-        consumerTransports.current = [
-          ...consumerTransports.current,
-          {
-            socketId: appData.socketId,
-            consumerTransport,
-            serverConsumerTransportId: params.id,
-            serverConsumerId: params.serverConsumerId,
-            producerId: remoteProducerId,
-            consumer,
-          },
-        ];
-
-        setTracks((prev) => [
-          ...prev,
-          {
-            name: "",
-            socketId: appData.socketId,
-            tracks: track,
-            image: "",
-            type: appData.type,
-          },
-        ]);
-
-        socket.emit("consumer-resume", {
-          serverConsumerId: params.serverConsumerId,
-        });
-      }
-    );
-  };
-
-  const connectSendTransport = async (
-    track: MediaStreamTrack,
-    type: "video" | "audio" | "screen",
-    socketId: string,
-    params: ProducerOptions
-  ) => {
-    if (track) {
-      let mediaParams: ProducerOptions = { ...params, track: track };
-
-      let mediaProducer = await producerTransport.current!.produce({
-        ...mediaParams,
-        appData: { socketId, type },
-      });
-
-      mediaProducer.on("trackended", () => {
-        console.log("video track ended");
-      });
-
-      mediaProducer.on("transportclose", () => {
-        console.log("video transport ended");
-        mediaProducer.close();
-      });
+  const getAudioStream = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioStreamRef.current = stream;
+    } catch (error) {
+      console.error("Error accessing audio stream:", error);
     }
+  }, []);
+
+  const getScreenStream = useCallback(async () => {
+    try {
+      const stream = await (navigator.mediaDevices as any).getDisplayMedia({
+        video: true,
+      });
+      screenStreamRef.current = stream;
+    } catch (error) {
+      console.error("Error accessing screen stream:", error);
+    }
+  }, []);
+
+  const stopStream = useCallback(
+    (streamRef: React.MutableRefObject<MediaStream | null>) => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+    },
+    []
+  );
+
+  const stopVideoStream = useCallback(
+    () => stopStream(videoStreamRef),
+    [stopStream]
+  );
+  const stopAudioStream = useCallback(
+    () => stopStream(audioStreamRef),
+    [stopStream]
+  );
+  const stopScreenStream = useCallback(
+    () => stopStream(screenStreamRef),
+    [stopStream]
+  );
+
+  const updateDevices = useCallback(async () => {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+
+    const microphones = devices
+      .filter((device) => device.kind === "audioinput")
+      .map((device) => ({ value: device, label: device.label }));
+    setMicrophones(microphones);
+
+    const speakers = devices
+      .filter((device) => device.kind === "audiooutput")
+      .map((device) => ({ value: device, label: device.label }));
+    setSpeakers(speakers);
+
+    const cameras = devices
+      .filter((device) => device.kind === "videoinput")
+      .map((device) => ({ value: device, label: device.label }));
+    setCameras(cameras);
+
+    // Screens are not part of enumerateDevices, so we handle them separately
+    setScreens([]);
+  }, []);
+
+  useEffect(() => {
+    updateDevices();
+    navigator.mediaDevices.addEventListener("devicechange", updateDevices);
+    return () => {
+      navigator.mediaDevices.removeEventListener("devicechange", updateDevices);
+    };
+  }, [updateDevices]);
+
+  const value = {
+    videoStream: videoStreamRef.current,
+    audioStream: audioStreamRef.current,
+    screenStream: screenStreamRef.current,
+    getVideoStream,
+    getAudioStream,
+    getScreenStream,
+    stopVideoStream,
+    stopAudioStream,
+    stopScreenStream,
+    microphones,
+    speakers,
+    cameras,
+    screens,
   };
 
   return (
-    <DataContext.Provider
-      value={{
-        device,
-        producerTransport,
-        consumingTransports,
-        consumerTransports,
-        joinRoom,
-        connectSendTransport,
-      }}
-    >
+    <MediaStreamContext.Provider value={value}>
       {children}
-    </DataContext.Provider>
+    </MediaStreamContext.Provider>
   );
 };
