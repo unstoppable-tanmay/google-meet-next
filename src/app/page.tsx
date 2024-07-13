@@ -5,6 +5,7 @@ import { joined } from "@/state/atom";
 import Head from "next/head";
 import { useEffect } from "react";
 import { useRecoilState } from "recoil";
+import { ToastContainer } from "react-toastify";
 
 export default function Page() {
   const [join, setJoin] = useRecoilState(joined);
@@ -21,7 +22,14 @@ export default function Page() {
           Live soon 🙃
         </div>
       )}
+      <ToastContainer />
       <Home />
+      {process.env.NEXT_PUBLIC_NOTICE && (
+        <div className="notice w-full text-center text-sm font-medium py-2 bg-red-400/30 px-4">
+          This is a ongoing project, only some of the features are implemented,
+          I am trying to complete it as soon as possible
+        </div>
+      )}
     </main>
   );
 }

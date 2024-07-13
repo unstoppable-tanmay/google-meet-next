@@ -13,7 +13,7 @@ import {
 } from "@nextui-org/react";
 
 import { useRecoilState } from "recoil";
-import { joined, mediaDevices, settings } from "@/state/atom";
+import { joined, settings } from "@/state/atom";
 
 import {
   MdOutlineArrowDropDown,
@@ -30,51 +30,34 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import User from "../common/User";
 import axios from "axios";
-import { MeetType } from "@/types/types";
-import { Socket } from "socket.io-client";
+import { MeetType, PeerDetailsType } from "@/types/types";
+import { toast } from "react-toastify";
+import { useSocket } from "@/provider/SocketContext";
+import { useMediaStream } from "@/provider/MediaProvider";
 
 const JoinRoom = ({ roomId }: { roomId: string }) => {
+  const { socket } = useSocket();
+  const {
+    videoStream,
+    audioStream,
+    getVideoStream,
+    getAudioStream,
+    stopVideoStream,
+    stopAudioStream,
+    cameras,
+    speakers,
+    microphones,
+  } = useMediaStream();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [roomStateLoading, setRoomStateLoading] = useState(true);
 
   const [setting, setSettings] = useRecoilState(settings);
-  const [mediaDevice, setMediaDevices] = useRecoilState(mediaDevices);
   const [join, setJoin] = useRecoilState(joined);
 
   const [room, setRoom] = useState<MeetType | null>(null);
 
   const session = useSession();
   const router = useRouter();
-
-  // useEffect(() => {
-  //   if (session.status == "unauthenticated") router.replace("/");
-  // }, [session, router]);
-
-  // Get Devices
-  useEffect(() => {
-    const getDevices = async () => {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-
-      const micDevices = devices.filter((e) => e.kind == "audioinput");
-      const speakerDevices = devices.filter((e) => e.kind == "audiooutput");
-      const cameraDevices = devices.filter((e) => e.kind == "videoinput");
-
-      setMediaDevices({
-        microphone: micDevices.map((e) => ({ value: e, label: e.label })),
-        speaker: speakerDevices.map((e) => ({ value: e, label: e.label })),
-        camera: cameraDevices.map((e) => ({ value: e, label: e.label })),
-        screen: [],
-      });
-
-      setSettings((prev) => ({
-        ...prev,
-        microphone: micDevices[0],
-        speaker: speakerDevices[0],
-        camera: cameraDevices[0],
-      }));
-    };
-    getDevices();
-  }, [setMediaDevices, setSettings]);
 
   // Add Camera
   useEffect(() => {
@@ -85,19 +68,14 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
 
       if (!open || !setting.cameraState) {
         if (videoElement && videoElement.srcObject) {
-          const stream = videoElement.srcObject as MediaStream;
-          stream.getTracks().forEach((track) => track.stop());
+          stopVideoStream(setting.camera.deviceId);
         }
         return;
       }
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: setting.camera?.deviceId },
-        });
-        if (videoElement!.srcObject !== stream) {
-          videoElement!.srcObject = stream;
-        }
+        const stream = await getVideoStream(setting.camera.deviceId);
+        videoElement!.srcObject = stream;
       } catch (error) {
         console.error("Error accessing video stream:", error);
       }
@@ -110,7 +88,7 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
         stream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [setting.cameraState, setting.camera]);
+  }, [setting.cameraState, setting.camera, getVideoStream, stopVideoStream]);
 
   useEffect(() => {
     getMeetingState();
@@ -130,11 +108,87 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
       if (res.status == 200) {
         setRoom(res.data.data);
         setRoomStateLoading(false);
+      } else {
+        toast("Room Not exist", {
+          hideProgressBar: true,
+          type: "info",
+          position: "bottom-right",
+        });
       }
-    } catch (error) {}
+    } catch (error) {
+      toast("Some Error Happened", {
+        hideProgressBar: true,
+        type: "error",
+        position: "bottom-right",
+      });
+    }
   };
 
-  const askForJoin = () => {};
+  const joinNow = () => {
+    setJoin("joined");
+  };
+  const present = () => {
+    toast("not implemented yet", {
+      hideProgressBar: true,
+      type: "info",
+      position: "bottom-right",
+    });
+  };
+  const askToJoin = () => {
+    setRoomStateLoading(true);
+    socket?.emit(
+      "ask-join",
+      {
+        user: session.data?.user as PeerDetailsType,
+        roomName: roomId,
+      },
+      (data: boolean | null) => {
+        console.log(data);
+        data == null
+          ? toast("You are denied", {
+              hideProgressBar: true,
+              type: "error",
+              position: "bottom-right",
+            })
+          : data == true
+          ? setJoin("joined")
+          : toast("You are denied", {
+              hideProgressBar: true,
+              type: "error",
+              position: "bottom-right",
+            });
+      }
+    );
+    setRoomStateLoading(false);
+  };
+  const askToPresent = () => {
+    toast("not implemented yet", {
+      hideProgressBar: true,
+      type: "info",
+      position: "bottom-right",
+    });
+  };
+  const switchHere = () => {
+    toast("not implemented yet", {
+      hideProgressBar: true,
+      type: "info",
+      position: "bottom-right",
+    });
+  };
+  const joinHereAlso = () => {
+    toast("not implemented yet", {
+      hideProgressBar: true,
+      type: "info",
+      position: "bottom-right",
+    });
+  };
+  const companionMode = () => {
+    toast("not implemented yet", {
+      hideProgressBar: true,
+      type: "info",
+      position: "bottom-right",
+    });
+  };
 
   return (
     <motion.section
@@ -244,7 +298,7 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
                 </div>
               </PopoverTrigger>
               <PopoverContent className="w-[clamp(100px,500px,90vw)] shadow-lg max-h-[50vh] rounded-md bg-white z-[1100] flex flex-col overflow-y-scroll no-scrollbar px-0">
-                {mediaDevice.microphone.map((e, i) => {
+                {microphones.map((e, i) => {
                   return (
                     <div
                       className="w-full py-2 px-3 hover:bg-black/10 cursor-pointer"
@@ -270,7 +324,7 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
                 </div>
               </PopoverTrigger>
               <PopoverContent className="w-[clamp(100px,500px,90vw)] shadow-lg max-h-[50vh] rounded-md bg-white z-[1100] flex flex-col overflow-y-scroll no-scrollbar px-0 py-0">
-                {mediaDevice.speaker.map((e, i) => {
+                {speakers.map((e, i) => {
                   return (
                     <div
                       className="w-full py-2 px-3 hover:bg-black/10 cursor-pointer"
@@ -296,7 +350,7 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
                 </div>
               </PopoverTrigger>
               <PopoverContent className="w-[clamp(100px,500px,90vw)] shadow-lg max-h-[50vh] rounded-md bg-white z-[1100] flex flex-col overflow-y-scroll no-scrollbar px-0 py-0">
-                {mediaDevice.camera.map((e, i) => {
+                {cameras.map((e, i) => {
                   return (
                     <div
                       className="w-full py-2 px-3 hover:bg-black/10 cursor-pointer"
@@ -314,7 +368,7 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
           </div>
         </div>
         {roomStateLoading ? (
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center xl:pr-28">
             <Spinner />
           </div>
         ) : (
@@ -322,21 +376,27 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
             <div className="heading text-2xl mb-6">Ready to join?</div>
             <div className="available text-sm font-semibold text-black/60 mb-2 flex gap-1">
               {room?.peers?.length &&
-                room.peers?.map((e) => {
+                room.peers?.slice(3).map((e) => {
                   return (
                     <>
                       <Avatar src={e.image} size="sm" />
                     </>
                   );
                 })}
+              {room?.peers?.length && room?.peers?.length > 3 && (
+                <Avatar>+</Avatar>
+              )}
             </div>
             <div className="available text-xs font-semibold text-black/60 mb-4">
               {room?.peers?.length ? (
                 <>
-                  {room.peers?.map((e) => {
+                  {room.peers?.slice(3).map((e) => {
                     return <>{e.name.split(" ")[0]}</>;
-                  })}{" "}
-                  is here
+                  })}
+                  {room?.peers?.length && room?.peers?.length > 3
+                    ? " and more are "
+                    : " is "}
+                  here
                 </>
               ) : (
                 "No one else is here"
@@ -351,11 +411,14 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
                     <>
                       <div
                         className="joinnow cursor-pointer px-6 py-3.5 rounded-full duration-200 bg-blue-500 text-white shadow-lg hover:bg-blue-600"
-                        onClick={(e) => setJoin("joined")}
+                        onClick={switchHere}
                       >
                         Switch Here
                       </div>
-                      <div className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]">
+                      <div
+                        className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]"
+                        onClick={present}
+                      >
                         <MdOutlinePresentToAll className="text-2xl" />
                         Present
                       </div>
@@ -364,11 +427,14 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
                     <>
                       <div
                         className="joinnow cursor-pointer px-6 py-3.5 rounded-full duration-200 bg-blue-500 text-white shadow-lg hover:bg-blue-600"
-                        onClick={(e) => setJoin("joined")}
+                        onClick={joinNow}
                       >
                         Join now
                       </div>
-                      <div className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]">
+                      <div
+                        className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]"
+                        onClick={present}
+                      >
                         <MdOutlinePresentToAll className="text-2xl" />
                         Present
                       </div>
@@ -379,11 +445,14 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
                 <>
                   <div
                     className="joinnow cursor-pointer px-6 py-3.5 rounded-full duration-200 bg-blue-500 text-white shadow-lg hover:bg-blue-600"
-                    onClick={(e) => setJoin("joined")}
+                    onClick={askToJoin}
                   >
                     Ask To Join
                   </div>
-                  <div className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]">
+                  <div
+                    className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]"
+                    onClick={askToPresent}
+                  >
                     <MdOutlinePresentToAll className="text-2xl" />
                     Present
                   </div>
@@ -395,12 +464,18 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
             </div>
             {room?.admin.email === session.data?.user?.email &&
               room?.peers.find((e) => e.email == session.data?.user?.email) && (
-                <div className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2 pb-3">
+                <div
+                  className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2 pb-3"
+                  onClick={joinHereAlso}
+                >
                   <MdOutlinePhonelink className="text-2xl" />
                   Join Here Also
                 </div>
               )}
-            <div className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2">
+            <div
+              className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2"
+              onClick={companionMode}
+            >
               <MdOutlinePhonelink className="text-2xl" />
               Use Companion Mode
             </div>

@@ -17,12 +17,12 @@ interface MediaStreamContextProps {
   videoStream: MediaStream | null;
   audioStream: MediaStream | null;
   screenStream: MediaStream | null;
-  getVideoStream: () => Promise<void>;
-  getAudioStream: () => Promise<void>;
-  getScreenStream: () => Promise<void>;
-  stopVideoStream: () => void;
-  stopAudioStream: () => void;
-  stopScreenStream: () => void;
+  getVideoStream: (deviceId?: string) => Promise<MediaStream|null>;
+  getAudioStream: (deviceId?: string) => Promise<MediaStream|null>;
+  getScreenStream: (deviceId?: string) => Promise<MediaStream|null>;
+  stopVideoStream: (deviceId?: string) => void;
+  stopAudioStream: (deviceId?: string) => void;
+  stopScreenStream: (deviceId?: string) => void;
   microphones: MediaDevice[];
   speakers: MediaDevice[];
   cameras: MediaDevice[];
@@ -51,21 +51,33 @@ export const MediaStreamProvider = ({ children }: { children: ReactNode }) => {
   const [cameras, setCameras] = useState<MediaDevice[]>([]);
   const [screens, setScreens] = useState<MediaDevice[]>([]);
 
-  const getVideoStream = useCallback(async () => {
+  const getVideoStream = useCallback(async (deviceId?: string) => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const constraints = {
+        video: deviceId ? { deviceId: { exact: deviceId } } : true,
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       videoStreamRef.current = stream;
+
+      return stream
     } catch (error) {
       console.error("Error accessing video stream:", error);
+      return null
     }
   }, []);
 
-  const getAudioStream = useCallback(async () => {
+  const getAudioStream = useCallback(async (deviceId?: string) => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const constraints = {
+        audio: deviceId ? { deviceId: { exact: deviceId } } : true,
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       audioStreamRef.current = stream;
+
+      return stream
     } catch (error) {
       console.error("Error accessing audio stream:", error);
+      return null
     }
   }, []);
 
@@ -75,15 +87,25 @@ export const MediaStreamProvider = ({ children }: { children: ReactNode }) => {
         video: true,
       });
       screenStreamRef.current = stream;
+
+      return stream
     } catch (error) {
       console.error("Error accessing screen stream:", error);
+      return null
     }
   }, []);
 
   const stopStream = useCallback(
-    (streamRef: React.MutableRefObject<MediaStream | null>) => {
+    (
+      streamRef: React.MutableRefObject<MediaStream | null>,
+      deviceId?: string
+    ) => {
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current.getTracks().forEach((track) => {
+          if (!deviceId || track.getSettings().deviceId === deviceId) {
+            track.stop();
+          }
+        });
         streamRef.current = null;
       }
     },
@@ -91,15 +113,15 @@ export const MediaStreamProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const stopVideoStream = useCallback(
-    () => stopStream(videoStreamRef),
+    (deviceId?: string) => stopStream(videoStreamRef, deviceId),
     [stopStream]
   );
   const stopAudioStream = useCallback(
-    () => stopStream(audioStreamRef),
+    (deviceId?: string) => stopStream(audioStreamRef, deviceId),
     [stopStream]
   );
   const stopScreenStream = useCallback(
-    () => stopStream(screenStreamRef),
+    (deviceId?: string) => stopStream(screenStreamRef, deviceId),
     [stopStream]
   );
 

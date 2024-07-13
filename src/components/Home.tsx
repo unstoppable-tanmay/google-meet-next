@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Carousel from "./common/Carousel";
 
 import { MdKeyboard, MdOutlineCalendarToday } from "react-icons/md";
@@ -18,6 +18,8 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { ServerResponse } from "@/types/types";
 import { useSession } from "next-auth/react";
+import { toast } from "react-toastify";
+import AskingComp from "./common/AskingComp";
 
 const Home = () => {
   const session = useSession();
@@ -27,51 +29,104 @@ const Home = () => {
   const [open, setOpen] = useRecoilState(settingsState);
   const [join, setJoin] = useRecoilState(joined);
 
+  const [loading, setLoading] = useState(true);
+
   const [meetForLaterModal, setMeetForLaterModal] = useState(false);
 
   const router = useRouter();
 
-  const handleCreateMeetForLater = () => {};
+  const handleCreateMeetForLater = () => {
+    toast("not implemented yet", {
+      hideProgressBar: true,
+      type: "info",
+      position: "bottom-right",
+    });
+  };
 
   const handleStartInstantMeet = async () => {
-    const res = await axios.post(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/createInstantMeet`,
-      {
-        user: {
-          name: session.data?.user?.name,
-          email: session.data?.user?.email,
-          image: session.data?.user?.image,
-        },
-        settings: {
-          shareScreen: true,
-          sendChatMessage: true,
-          sendReaction: true,
-          turnOnMic: true,
-          turnOnVideo: true,
-          hostMustJoinBeforeAll: true,
-          access: "trusted",
-        },
-      }
-    );
-    const data: ServerResponse<{ id: string }> = res.data;
+    try {
+      if (session.status !== "authenticated") return;
+      setLoading(true);
+      if (session.status === "authenticated") {
+        const res = await axios.post(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/createInstantMeet`,
+          {
+            user: {
+              name: session.data?.user?.name,
+              email: session.data?.user?.email,
+              image: session.data?.user?.image,
+            },
+            settings: {
+              shareScreen: true,
+              sendChatMessage: true,
+              sendReaction: true,
+              turnOnMic: true,
+              turnOnVideo: true,
+              hostMustJoinBeforeAll: true,
+              access: "trusted",
+            },
+          }
+        );
+        const data: ServerResponse<{ id: string }> = res.data;
 
-    if (data.success) {
-      setJoin("joined");
-      router.push(`/${data.data?.id}`);
-    } else {
+        if (data.success) {
+          setJoin("joined");
+          router.push(`/${data.data?.id}`);
+        } else {
+          toast("Some Error Happened", {
+            hideProgressBar: true,
+            type: "info",
+            position: "bottom-right",
+          });
+        }
+      } else {
+        toast("You Should Signed In", {
+          hideProgressBar: true,
+          type: "info",
+          position: "bottom-right",
+        });
+      }
+    } catch (error) {
+      toast("Some Error Happened", {
+        hideProgressBar: true,
+        type: "info",
+        position: "bottom-right",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCreateMeetWithSchedule = () => {};
+  const handleCreateMeetWithSchedule = () => {
+    toast("not implemented yet", {
+      hideProgressBar: true,
+      type: "info",
+      position: "bottom-right",
+    });
+  };
+
+  useEffect(() => {
+    if (session.status !== "loading") setLoading(false);
+  }, [session]);
 
   return (
     <>
+      {loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0, 0, 0.8, 0.8, 0.8, 0.8] }}
+          transition={{ duration: 1 }}
+          className="layer w-full h-full bg-black absolute pointer-events-none opacity-0 flex items-center justify-center text-3xl font-medium tracking-wide text-white z-[1000]"
+        >
+          Loading . . .
+        </motion.div>
+      )}
       <Nav />
       <motion.section
         transition={{ duration: 0.8 }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="w-full flex flex-col lg:flex-row items-center justify-between px-5 md:px-[5%] gap-20 flex-1 no-scrollbar"
+        className="w-full flex flex-col lg:flex-row items-center justify-between px-5 md:px-[5%] md:gap-10 xl:gap-20 flex-1 no-scrollbar md:py-5 xl:py-0"
       >
         <div className="left flex gap-4 flex-col h-full text-center md:text-left py-28 md:py-0">
           <div className="heading text-[clamp(43px,2.1vw,100px)] leading-[1.2] font-sans">
@@ -161,7 +216,7 @@ const Home = () => {
             </div>
           </div>
           <div className="devider w-full h-[1px] bg-black/15 my-5"></div>
-          <div className="learnmore text-black/60 font-medium hidden md:flex gap-1.5">
+          <div className="learnmore text-black/60 font-medium hidden xl:flex gap-1.5">
             <a href="" className="text-[#0b57d0]">
               Learn More{" "}
             </a>
@@ -173,7 +228,7 @@ const Home = () => {
         </div>
         <div className="learnmore text-black/60 font-medium md:hidden text-center mb-4 flex">
           <a href="" className="text-[#0b57d0]">
-            Learn More
+            Learn More{" "}
           </a>
           about Google Meet
         </div>

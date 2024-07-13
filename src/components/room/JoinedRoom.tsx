@@ -1,11 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { useRecoilState } from "recoil";
 import { joined, rightBoxAtom, settings, tracksAtom } from "@/state/atom";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Spinner } from "@nextui-org/react";
+import { Spinner, useDisclosure } from "@nextui-org/react";
 
 import BottomBar from "./components/BottomBar";
 import VideoArea from "./components/VideoArea";
@@ -21,6 +21,7 @@ import {
 } from "@/types/types";
 import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
 import { useData } from "@/provider/DataProvider";
+import AskingComp from "../common/AskingComp";
 
 const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
@@ -39,16 +40,18 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
   const [tracks, setTracks] = useRecoilState(tracksAtom);
 
+  // asking login data
+  const [userToAdmit, setUserToAdmit] = useState<UserType | null>(null);
+  const [callback, setCallback] = useState<((data: boolean) => void) | null>(
+    null
+  );
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
   // initial loading
   const [loading, setLoading] = useState(false);
 
   const [setting, setSettings] = useRecoilState(settings);
   const [meetDetails, setMeetDetails] = useRecoilState(meetDetailsAtom);
-
-  const callevent = (event: string, data: any) => {
-    console.log(event);
-    socket?.emit(event, data);
-  };
 
   // Joining Logic
   useEffect(() => {
@@ -77,9 +80,23 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
       socket.on(
         "asking-join",
-        ({ user }: { user: UserType }, callback: (data: boolean) => void) => {
-          // TODO to create the asking logic and return the response
-          callback(true);
+        async (
+          { user }: { user: UserType },
+          callback: (data: boolean) => void
+        ) => {
+          setUserToAdmit(user);
+          setCallback(() => callback);
+          setIsPopoverOpen(true);
+
+          console.log("opened popup");
+
+          const timer = setTimeout(() => {
+            console.log("timer ended");
+            callback(false);
+            setIsPopoverOpen(false);
+          }, 30000);
+
+          return () => clearTimeout(timer);
         }
       );
 
@@ -105,6 +122,22 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
       );
     }
   }, []);
+
+  const handleAdmit = useCallback(() => {
+    if (callback) {
+      console.log("called handleAdmit");
+      callback(true);
+    }
+    setIsPopoverOpen(false);
+  }, [callback]);
+
+  const handleDeny = useCallback(() => {
+    if (callback) {
+      console.log("called handleDeny");
+      callback(false);
+    }
+    setIsPopoverOpen(false);
+  }, [callback]);
 
   useEffect(() => {
     if (socket) {
@@ -152,17 +185,12 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
         </motion.div>
       ) : (
         <section className="w-full h-screen bg-[#202124] flex flex-col">
+          {isPopoverOpen && userToAdmit && (
+            <AskingComp user={null} onAdmit={handleAdmit} onDeny={handleDeny} />
+          )}
           {meetDetails?.settings?.access == "open" && (
             <div className="topbar py-2 px-6 flex">
-              <div
-                // onClick={(e) =>
-                //   callevent("ask-join", {
-                //     user: session.data?.user,
-                //     roomName: roomId,
-                //   })
-                // }
-                className="viewers bg-[#f4bc16] p-2 flex items-center justify-center rounded-md"
-              >
+              <div className="viewers bg-[#f4bc16] p-2 flex items-center justify-center rounded-md">
                 <BiSolidBuildings className="text-xl" />
               </div>
             </div>

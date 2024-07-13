@@ -9,10 +9,13 @@ import { joined } from "@/state/atom";
 import { Spinner } from "@nextui-org/react";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
+import Head from "next/head";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 import { Socket, io } from "socket.io-client";
+import { ToastContainer, toast } from "react-toastify";
+import { MediaStreamProvider } from "@/provider/MediaProvider";
 
 const Page = ({ params }: { params: { room: string } }) => {
   const room = params.room;
@@ -27,7 +30,6 @@ const Page = ({ params }: { params: { room: string } }) => {
   const [join, setJoin] = useRecoilState(joined);
 
   useEffect(() => {
-    console.log("main page");
     if (!isValidRoomId(room)) {
       setLoadingMessage("Invalid Room Code");
       setJoin("wrongcode");
@@ -37,87 +39,105 @@ const Page = ({ params }: { params: { room: string } }) => {
   }, []);
 
   const checkRoom = async (roomId: string) => {
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/isMeetExist`,
-      {
-        params: {
-          roomId,
-        },
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/isMeetExist`,
+        {
+          params: {
+            roomId,
+          },
+        }
+      );
+
+      if (response.status == 200 && response.data.data) {
+      } else {
+        setJoin("wrongcode");
+        toast("Room Not exist", {
+          hideProgressBar: true,
+          type: "info",
+          position: "bottom-right",
+        });
       }
-    );
-
-    if (response.status == 200 && response.data.data) {
-    } else {
-      setJoin("wrongcode");
+    } catch (error) {
+      toast("Some Error Happened", {
+        hideProgressBar: true,
+        type: "error",
+        position: "bottom-right",
+      });
+    } finally {
+      setPageLoading(false);
     }
-    setPageLoading(false);
   };
-
-  // useEffect(() => {}, []);
 
   return (
     <SocketProvider>
-      <DataProvider>
-        <AnimatePresence mode="wait">
-          {pageLoading ? (
-            <section className="w-screen h-screen flex items-center justify-center text-xl">
-              {loadingMessage}
-            </section>
-          ) : join == "joined" ? (
-            <motion.div className="wrapper wrapper" key={"zsasdda"}>
-              <motion.div
-                exit={{ opacity: [0, 0.5, 0.7, 0.7, 0.7, 0.7] }}
-                transition={{ duration: 2 }}
-                className="layer w-full h-full bg-black absolute pointer-events-none opacity-0 flex items-center justify-center text-3xl font-medium tracking-wide text-white z-[1000]"
-              >
-                Leaving . . .
+      <MediaStreamProvider>
+        <DataProvider>
+          <ToastContainer />
+          <Head>
+            <title>Meet - {room}</title>
+          </Head>
+          <AnimatePresence mode="wait">
+            {pageLoading ? (
+              <section className="w-screen h-screen flex items-center justify-center text-xl">
+                {loadingMessage}
+              </section>
+            ) : join == "joined" ? (
+              <motion.div className="wrapper wrapper" key={"zsasdda"}>
+                <motion.div
+                  exit={{ opacity: [0, 0.5, 0.7, 0.7, 0.7, 0.7] }}
+                  transition={{ duration: 2 }}
+                  className="layer w-full h-full bg-black absolute pointer-events-none opacity-0 flex items-center justify-center text-3xl font-medium tracking-wide text-white z-[1000]"
+                >
+                  Leaving . . .
+                </motion.div>
+                <JoinedRoom roomId={room} />
               </motion.div>
-              <JoinedRoom roomId={room} />
-            </motion.div>
-          ) : join == "joining" ? (
-            <motion.div className="wrapper wrapper" key={"zsda"}>
-              <motion.div
-                exit={{ opacity: [0, 0, 0, 0.8, 0.8, 0.8, 0.8] }}
-                transition={{ duration: 2 }}
-                className="layer w-full h-full bg-black absolute pointer-events-none opacity-0 flex items-center justify-center text-3xl font-medium tracking-wide text-white z-[1000]"
-              >
-                Joining . . .
+            ) : join == "joining" ? (
+              <motion.div className="wrapper wrapper" key={"zsda"}>
+                <motion.div
+                  exit={{ opacity: [0, 0, 0, 0.8, 0.8, 0.8, 0.8] }}
+                  transition={{ duration: 2 }}
+                  className="layer w-full h-full bg-black absolute pointer-events-none opacity-0 flex items-center justify-center text-3xl font-medium tracking-wide text-white z-[1000]"
+                >
+                  Joining . . .
+                </motion.div>
+                <JoinRoom roomId={room} />
               </motion.div>
-              <JoinRoom roomId={room} />
-            </motion.div>
-          ) : join == "leaved" ? (
-            <section className="w-screen h-screen flex items-center justify-center text-xl">
-              Leaved
-              <button
-                className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
-                onClick={(e) => router.replace("/")}
-              >
-                Return
-              </button>
-            </section>
-          ) : join == "wrongcode" ? (
-            <section className="w-screen h-screen flex items-center justify-center text-xl">
-              WrongCode
-              <button
-                className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
-                onClick={(e) => router.replace("/")}
-              >
-                Return
-              </button>
-            </section>
-          ) : (
-            <section className="w-screen h-screen flex items-center justify-center text-xl">
-              Back Nothing Here
-              <button
-                className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
-                onClick={(e) => router.replace("/")}
-              >
-                Return
-              </button>
-            </section>
-          )}
-        </AnimatePresence>
-      </DataProvider>
+            ) : join == "leaved" ? (
+              <section className="w-screen h-screen flex items-center justify-center text-xl">
+                Leaved
+                <button
+                  className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
+                  onClick={(e) => router.replace("/")}
+                >
+                  Return
+                </button>
+              </section>
+            ) : join == "wrongcode" ? (
+              <section className="w-screen h-screen flex items-center justify-center text-xl">
+                WrongCode
+                <button
+                  className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
+                  onClick={(e) => router.replace("/")}
+                >
+                  Return
+                </button>
+              </section>
+            ) : (
+              <section className="w-screen h-screen flex items-center justify-center text-xl">
+                Back Nothing Here
+                <button
+                  className="my-2 px-3 py-1.5 rounded-md border-none outline-none"
+                  onClick={(e) => router.replace("/")}
+                >
+                  Return
+                </button>
+              </section>
+            )}
+          </AnimatePresence>
+        </DataProvider>
+      </MediaStreamProvider>
     </SocketProvider>
   );
 };
