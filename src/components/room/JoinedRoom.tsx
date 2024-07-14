@@ -203,6 +203,8 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
       setMeetDetails(null);
       setUserToAdmit(null);
+
+      socket?.close();
     };
   }, []);
 

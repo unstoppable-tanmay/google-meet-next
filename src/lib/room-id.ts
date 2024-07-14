@@ -17,8 +17,14 @@ export function isValidRoomId(link: string): boolean {
 
   if (link.match(roomIdPattern)) return true;
 
-  const pattern =
-    /(https?:\/\/)?(?:www\.|(?!www))localhost:3000\/[a-z]{3}-[a-z]{4}-[a-z]{3}/;
+  const pattern = new RegExp(
+    `(https?:\\/\\/)?(?:www\\.|(?!www))${(
+      process.env.NEXT_PUBLIC_URL ?? ""
+    ).replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    )}\\/\\b[a-z]{3}-[a-z]{4}-[a-z]{3}\\b`
+  );
   if (link.match(pattern)) return true;
 
   return false;
@@ -29,8 +35,14 @@ export function isLinkOrCode(text: string): "link" | "code" | false {
 
   if (text.match(roomIdPattern)) return "code";
 
-  const pattern =
-    /(https?:\/\/)?(?:www\.|(?!www))localhost:3000\/[a-z]{3}-[a-z]{4}-[a-z]{3}/;
+  const pattern = new RegExp(
+    `(https?:\\/\\/)?(?:www\\.|(?!www))${(
+      process.env.NEXT_PUBLIC_URL ?? ""
+    ).replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    )}\\/\\b[a-z]{3}-[a-z]{4}-[a-z]{3}\\b`
+  );
   if (text.match(pattern)) return "link";
 
   return false;
