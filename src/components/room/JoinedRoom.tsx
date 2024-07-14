@@ -178,7 +178,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
   useEffect(() => {
     if (socket) {
-      ScreenManager(setting.screenState, socket);
+      ScreenManager(setting.screenState, socket, roomId);
       socket?.emit("user-update", {
         socketId: socket.id,
         roomName: roomId,

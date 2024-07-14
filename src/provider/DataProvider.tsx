@@ -11,10 +11,11 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { SetterOrUpdater } from "recoil";
+import { SetterOrUpdater, useRecoilState } from "recoil";
 import { io, Socket } from "socket.io-client";
 import { audio_params, video_params } from "../lib/constants";
 import { useMediaStream } from "./MediaProvider";
+import { settings } from "@/state/atom";
 
 interface DataContextProps {
   device: React.MutableRefObject<Device | null>;
@@ -38,17 +39,12 @@ interface DataContextProps {
     setLoading: React.Dispatch<React.SetStateAction<boolean>>,
     setMeetDetails: SetterOrUpdater<MeetType | null>
   ) => void;
-  VideoManager: (
-    setting: boolean,
-    socket: Socket,
-  ) => Promise<void>;
-  AudioManager: (
-    setting: boolean,
-    socket: Socket,
-  ) => Promise<void>;
+  VideoManager: (setting: boolean, socket: Socket) => Promise<void>;
+  AudioManager: (setting: boolean, socket: Socket) => Promise<void>;
   ScreenManager: (
     setting: boolean,
     socket: Socket,
+    roomId: string
   ) => Promise<void>;
 }
 
@@ -91,6 +87,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       serverConsumerId: string;
     }[]
   >([]);
+
+  const [settingState, setSettings] = useRecoilState(settings);
 
   const {
     cameras,
@@ -426,7 +424,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const ScreenManager = async (setting: boolean, socket: Socket) => {
+  const ScreenManager = async (
+    setting: boolean,
+    socket: Socket,
+    roomId: string
+  ) => {
     if (setting) {
       if (!screenProducer.current) {
         const stream = await getScreenStream();
@@ -436,6 +438,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
           track: stream?.getVideoTracks()[0],
           appData: { socketId: socket.id!, type: "screen" },
         })!;
+
+        stream?.getVideoTracks()[0].addEventListener("ended", () => {
+          setSettings((prev) => ({ ...prev, screenState: false }));
+          socket?.emit("user-update", {
+            socketId: socket.id,
+            roomName: roomId,
+            data: { screen: false } as Partial<PeerDetailsType>,
+          });
+        });
 
         screenProducer.current.on("trackended", () => {
           console.log("screen track ended");
@@ -447,6 +458,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
         });
       } else {
         const stream = await getScreenStream();
+
+        stream?.getVideoTracks()[0].addEventListener("ended", () => {
+          setSettings((prev) => ({ ...prev, screenState: false }));
+          socket?.emit("user-update", {
+            socketId: socket.id,
+            roomName: roomId,
+            data: { screen: false } as Partial<PeerDetailsType>,
+          });
+        });
+
         screenProducer.current.replaceTrack({
           track: stream?.getVideoTracks()[0]!,
         });

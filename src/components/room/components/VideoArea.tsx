@@ -171,8 +171,12 @@ const Screen = ({ user }: { user: PeerDetailsType }) => {
   const screenElement = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (tracks.find((e) => e.socketId == user.socketId && e.type == "screen")) {
-      screenElement.current!.srcObject = new MediaStream([
+    if (
+      user.screen &&
+      screenElement.current &&
+      tracks.find((e) => e.socketId == user.socketId && e.type == "screen")
+    ) {
+      screenElement.current.srcObject = new MediaStream([
         tracks.find(
           (track) => track.socketId == user.socketId && track.type == "screen"
         )?.tracks!,

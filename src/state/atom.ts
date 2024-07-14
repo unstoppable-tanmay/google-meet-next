@@ -31,7 +31,7 @@ export const settings = atom<SettingType>({
     caption: false,
     emojies: false,
   },
-  effects_UNSTABLE: [persistAtom],
+  // effects_UNSTABLE: [persistAtom],
 });
 
 export const rightBoxAtom = atom<boolean>({
