@@ -17,6 +17,7 @@ const VideoArea = () => {
   const {
     videoStream,
     audioStream,
+    screenStream,
     getVideoStream,
     getAudioStream,
     stopVideoStream,
@@ -33,7 +34,12 @@ const VideoArea = () => {
   useEffect(() => {
     if (videoStream && myVideoElement.current)
       myVideoElement.current.srcObject = new MediaStream(videoStream);
-  }, [videoStream]);
+  }, [videoStream, setting.cameraState]);
+
+  useEffect(() => {
+    if (screenStream && myScreenElement.current)
+      myScreenElement.current.srcObject = new MediaStream(screenStream);
+  }, [screenStream, setting.screenState]);
 
   return (
     <motion.section
@@ -131,11 +137,11 @@ const User = ({ user }: { user: PeerDetailsType }) => {
   return (
     <>
       <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden relative">
-      <div className="overlay z-30 w-full h-full absolute p-3 flex flex-col justify-end">
-            <div className="name font-medium text-white/60 text-sm self-start">
-              {user?.name?.split(" ").slice(0, 2).join(" ")}
-            </div>
+        <div className="overlay z-30 w-full h-full absolute p-3 flex flex-col justify-end">
+          <div className="name font-medium text-white/60 text-sm self-start">
+            {user?.name?.split(" ").slice(0, 2).join(" ")}
           </div>
+        </div>
         <video
           autoPlay
           className="w-full h-full object-cover"
