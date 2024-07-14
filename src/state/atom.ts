@@ -1,11 +1,7 @@
-import { SettingType, UserSocketType } from "@/types/types";
-import { Device } from "mediasoup-client";
-import { Consumer } from "mediasoup-client/lib/Consumer";
-import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
-import { Transport } from "mediasoup-client/lib/Transport";
 import { atom } from "recoil";
 import { recoilPersist } from "recoil-persist";
-import { Socket } from "socket.io-client";
+
+import { SettingType, UserSocketType } from "@/types/types";
 
 const localStorage = typeof window !== `undefined` ? window.localStorage : null;
 
@@ -35,27 +31,12 @@ export const settings = atom<SettingType>({
     caption: false,
     emojies: false,
   },
-  // effects_UNSTABLE: [persistAtom],
+  effects_UNSTABLE: [persistAtom],
 });
 
 export const rightBoxAtom = atom<boolean>({
   key: "rightBoxAtom",
   default: false,
-});
-
-export const mediaDevices = atom<{
-  microphone: { value: MediaDeviceInfo; label: string }[];
-  speaker: { value: MediaDeviceInfo; label: string }[];
-  camera: { value: MediaDeviceInfo; label: string }[];
-  screen: { value: MediaDeviceInfo; label: string }[];
-}>({
-  key: "mediaDevices",
-  default: {
-    microphone: [],
-    speaker: [],
-    camera: [],
-    screen: [],
-  },
 });
 
 export const joined = atom<"joined" | "joining" | "leaved" | "wrongcode">({
