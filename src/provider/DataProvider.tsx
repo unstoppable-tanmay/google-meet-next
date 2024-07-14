@@ -38,26 +38,17 @@ interface DataContextProps {
     setLoading: React.Dispatch<React.SetStateAction<boolean>>,
     setMeetDetails: SetterOrUpdater<MeetType | null>
   ) => void;
-  connectSendTransport: (
-    track: MediaStreamTrack,
-    type: "video" | "audio" | "screen",
-    socketId: string,
-    params: ProducerOptions
-  ) => Promise<void>;
   VideoManager: (
     setting: boolean,
     socket: Socket,
-    connectSendTransport: any
   ) => Promise<void>;
   AudioManager: (
     setting: boolean,
     socket: Socket,
-    connectSendTransport: any
   ) => Promise<void>;
   ScreenManager: (
     setting: boolean,
     socket: Socket,
-    connectSendTransport: any
   ) => Promise<void>;
 }
 
@@ -371,107 +362,98 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
-  const connectSendTransport = async (
-    track: MediaStreamTrack,
-    type: "video" | "audio" | "screen",
-    socketId: string,
-    params: ProducerOptions
-  ) => {
-    if (track) {
-      let mediaParams: ProducerOptions = { ...params, track: track };
-
-      let mediaProducer = await producerTransport.current!.produce({
-        ...mediaParams,
-        appData: { socketId, type },
-      });
-
-      mediaProducer.on("trackended", () => {
-        console.log("video track ended");
-      });
-
-      mediaProducer.on("transportclose", () => {
-        console.log("video transport ended");
-        mediaProducer.close();
-      });
-    }
-  };
-
-  const VideoManager = async (
-    setting: boolean,
-    socket: Socket,
-    connectSendTransport: any
-  ) => {
+  const VideoManager = async (setting: boolean, socket: Socket) => {
     if (setting) {
       if (!videoProducer.current) {
-        // videoStream.current = await window.navigator.mediaDevices.getUserMedia({
-        //   video: {
-        //     width: {
-        //       min: 640,
-        //       max: 1920,
-        //     },
-        //     height: {
-        //       min: 400,
-        //       max: 1080,
-        //     },
-        //     noiseSuppression: true,
-        //   },
-        // });
-
         const stream = await getVideoStream();
 
-        connectSendTransport(
-          stream?.getVideoTracks()[0],
-          "video",
-          socket.id!,
-          video_params
-        );
+        videoProducer.current = await producerTransport.current?.produce({
+          ...video_params,
+          track: stream?.getVideoTracks()[0],
+          appData: { socketId: socket.id!, type: "video" },
+        })!;
+
+        videoProducer.current.on("trackended", () => {
+          console.log("video track ended");
+        });
+
+        videoProducer.current.on("transportclose", () => {
+          console.log("video transport ended");
+          videoProducer.current?.close();
+        });
       } else {
+        const stream = await getVideoStream();
+        videoProducer.current.replaceTrack({
+          track: stream?.getVideoTracks()[0]!,
+        });
         videoProducer.current.resume();
       }
     } else {
+      stopVideoStream();
       videoProducer.current?.pause();
     }
   };
-  const AudioManager = async (
-    setting: boolean,
-    socket: Socket,
-    connectSendTransport: any
-  ) => {
+
+  const AudioManager = async (setting: boolean, socket: Socket) => {
     if (setting) {
       if (!audioProducer.current) {
         const stream = await getAudioStream();
-        connectSendTransport(
-          stream?.getAudioTracks()[0],
-          "audio",
-          socket.id!,
-          audio_params
-        );
+
+        audioProducer.current = await producerTransport.current?.produce({
+          ...audio_params,
+          track: stream?.getAudioTracks()[0],
+          appData: { socketId: socket.id!, type: "audio" },
+        })!;
+
+        audioProducer.current.on("trackended", () => {
+          console.log("audio track ended");
+        });
+
+        audioProducer.current.on("transportclose", () => {
+          console.log("audio transport ended");
+          audioProducer.current?.close();
+        });
       } else {
+        const stream = await getAudioStream();
+        audioProducer.current.replaceTrack({
+          track: stream?.getAudioTracks()[0]!,
+        });
         audioProducer.current.resume();
       }
     } else {
+      stopAudioStream();
       audioProducer.current?.pause();
     }
   };
-  const ScreenManager = async (
-    setting: boolean,
-    socket: Socket,
-    connectSendTransport: any
-  ) => {
+
+  const ScreenManager = async (setting: boolean, socket: Socket) => {
     if (setting) {
       if (!screenProducer.current) {
         const stream = await getScreenStream();
-        if (stream)
-          connectSendTransport(
-            stream.getVideoTracks()[0],
-            "video",
-            socket.id!,
-            video_params
-          );
+
+        screenProducer.current = await producerTransport.current?.produce({
+          ...video_params,
+          track: stream?.getVideoTracks()[0],
+          appData: { socketId: socket.id!, type: "screen" },
+        })!;
+
+        screenProducer.current.on("trackended", () => {
+          console.log("screen track ended");
+        });
+
+        screenProducer.current.on("transportclose", () => {
+          console.log("screen transport ended");
+          screenProducer.current?.close();
+        });
       } else {
+        const stream = await getScreenStream();
+        screenProducer.current.replaceTrack({
+          track: stream?.getVideoTracks()[0]!,
+        });
         screenProducer.current.resume();
       }
     } else {
+      stopScreenStream();
       screenProducer.current?.pause();
     }
   };
@@ -484,7 +466,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
         consumingTransports,
         consumerTransports,
         joinRoom,
-        connectSendTransport,
         VideoManager,
         AudioManager,
         ScreenManager,

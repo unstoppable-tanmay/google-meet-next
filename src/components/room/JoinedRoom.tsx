@@ -5,7 +5,7 @@ import { useRecoilState } from "recoil";
 import { joined, rightBoxAtom, settings, tracksAtom } from "@/state/atom";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Spinner, useDisclosure } from "@nextui-org/react";
+import { Spinner } from "@nextui-org/react";
 
 import BottomBar from "./components/BottomBar";
 import VideoArea from "./components/VideoArea";
@@ -16,7 +16,6 @@ import { useSocket } from "@/provider/SocketContext";
 import {
   MeetType,
   PeerDetailsType,
-  UserSocketType,
   UserType,
 } from "@/types/types";
 import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
@@ -29,7 +28,6 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const { socket } = useSocket();
   const {
     joinRoom,
-    connectSendTransport,
     VideoManager,
     AudioManager,
     ScreenManager,
@@ -158,7 +156,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
   useEffect(() => {
     if (socket) {
-      VideoManager(setting.cameraState, socket, connectSendTransport);
+      VideoManager(setting.cameraState, socket);
       socket?.emit("user-update", {
         socketId: socket.id,
         roomName: roomId,
@@ -169,7 +167,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
   useEffect(() => {
     if (socket) {
-      AudioManager(setting.microphoneState, socket, connectSendTransport);
+      AudioManager(setting.microphoneState, socket);
       socket?.emit("user-update", {
         socketId: socket.id,
         roomName: roomId,
@@ -180,7 +178,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
   useEffect(() => {
     if (socket) {
-      ScreenManager(setting.screenState, socket, connectSendTransport);
+      ScreenManager(setting.screenState, socket);
       socket?.emit("user-update", {
         socketId: socket.id,
         roomName: roomId,
