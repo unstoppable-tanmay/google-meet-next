@@ -22,6 +22,7 @@ import {
 import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
 import { useData } from "@/provider/DataProvider";
 import AskingComp from "../common/AskingComp";
+import { useMediaStream } from "@/provider/MediaProvider";
 
 const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
@@ -33,6 +34,22 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
     AudioManager,
     ScreenManager,
   } = useData();
+
+  const {
+    cameras,
+    microphones,
+    screens,
+    speakers,
+    getAudioStream,
+    getScreenStream,
+    getVideoStream,
+    audioStream,
+    screenStream,
+    videoStream,
+    stopAudioStream,
+    stopScreenStream,
+    stopVideoStream,
+  } = useMediaStream();
 
   // whole session join
   const [join, setJoin] = useRecoilState(joined);
@@ -171,6 +188,14 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
       });
     }
   }, [setting.screenState, socket]);
+
+  useEffect(() => {
+    return () => {
+      stopAudioStream();
+      stopVideoStream();
+      stopScreenStream();
+    };
+  }, []);
 
   return (
     <AnimatePresence>

@@ -14,6 +14,7 @@ import React, {
 import { SetterOrUpdater } from "recoil";
 import { io, Socket } from "socket.io-client";
 import { audio_params, video_params } from "../lib/constants";
+import { useMediaStream } from "./MediaProvider";
 
 interface DataContextProps {
   device: React.MutableRefObject<Device | null>;
@@ -73,10 +74,6 @@ export const useData = (): DataContextProps => {
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const videoStream = useRef<MediaStream | null>(null);
-  const audioStream = useRef<MediaStream | null>(null);
-  const screenStream = useRef<MediaStream | null>(null);
-
   const videoProducer = useRef<Producer<{
     socketId: string;
     type: "video" | "audio" | "screen";
@@ -103,6 +100,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       serverConsumerId: string;
     }[]
   >([]);
+
+  const {
+    cameras,
+    microphones,
+    screens,
+    speakers,
+    getAudioStream,
+    getScreenStream,
+    getVideoStream,
+    audioStream,
+    screenStream,
+    videoStream,
+    stopAudioStream,
+    stopScreenStream,
+    stopVideoStream,
+  } = useMediaStream();
 
   const joinRoom = (
     socket: Socket,
@@ -390,22 +403,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     if (setting) {
       if (!videoProducer.current) {
-        videoStream.current = await window.navigator.mediaDevices.getUserMedia({
-          video: {
-            width: {
-              min: 640,
-              max: 1920,
-            },
-            height: {
-              min: 400,
-              max: 1080,
-            },
-            noiseSuppression: true,
-          },
-        });
+        // videoStream.current = await window.navigator.mediaDevices.getUserMedia({
+        //   video: {
+        //     width: {
+        //       min: 640,
+        //       max: 1920,
+        //     },
+        //     height: {
+        //       min: 400,
+        //       max: 1080,
+        //     },
+        //     noiseSuppression: true,
+        //   },
+        // });
+
+        const stream = await getVideoStream();
 
         connectSendTransport(
-          videoStream.current.getVideoTracks()[0],
+          stream?.getVideoTracks()[0],
           "video",
           socket.id!,
           video_params
@@ -424,15 +439,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     if (setting) {
       if (!audioProducer.current) {
-        audioStream.current = await window.navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-          },
-        });
-
+        const stream = await getAudioStream();
         connectSendTransport(
-          audioStream.current.getAudioTracks()[0],
+          stream?.getAudioTracks()[0],
           "audio",
           socket.id!,
           audio_params
@@ -451,17 +460,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     if (setting) {
       if (!screenProducer.current) {
-        screenStream.current =
-          await window.navigator.mediaDevices.getDisplayMedia({
-            video: true,
-          });
-
-        connectSendTransport(
-          screenStream.current.getVideoTracks()[0],
-          "video",
-          socket.id!,
-          video_params
-        );
+        const stream = await getScreenStream();
+        if (stream)
+          connectSendTransport(
+            stream.getVideoTracks()[0],
+            "video",
+            socket.id!,
+            video_params
+          );
       } else {
         screenProducer.current.resume();
       }

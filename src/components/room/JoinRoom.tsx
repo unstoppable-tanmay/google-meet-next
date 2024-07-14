@@ -368,11 +368,11 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
           </div>
         </div>
         {roomStateLoading ? (
-          <div className="flex items-center justify-center xl:pr-28">
+          <div className="flex items-center justify-center w-full">
             <Spinner />
           </div>
         ) : (
-          <div className="joining flex flex-col items-center justify-center xl:pr-28">
+          <div className="joining flex flex-col items-center justify-center">
             <div className="heading text-2xl mb-6">Ready to join?</div>
             <div className="available text-sm font-semibold text-black/60 mb-2 flex gap-1">
               {room?.peers?.length &&
