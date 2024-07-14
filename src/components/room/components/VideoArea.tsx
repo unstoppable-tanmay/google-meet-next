@@ -30,21 +30,31 @@ const VideoArea = () => {
     console.log(meetDetails);
   }, [meetDetails]);
 
+  useEffect(() => {
+    if (videoStream && myVideoElement.current)
+      myVideoElement.current.srcObject = new MediaStream(videoStream);
+  }, [videoStream]);
+
   return (
     <motion.section
       layout
       className="flex-1 h-full p-1 rounded-lg flex items-center justify-center"
     >
       <div className="video-section overflow-hidden w-full h-full flex items-center justify-center gap-6">
-        <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden">
+        <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden relative">
+          <div className="overlay z-30 w-full h-full absolute p-3 flex flex-col justify-end">
+            <div className="name font-medium text-white/60 text-sm self-start">
+              {session.data?.user?.name?.split(" ").slice(0, 2).join(" ")}
+            </div>
+          </div>
           <video
             autoPlay
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover z-20"
             style={{ display: setting.cameraState ? "block" : "none" }}
             ref={myVideoElement}
           ></video>
           {!setting.cameraState && (
-            <div className="userImage w-[clamp(40px,60px,80px)] aspect-square rounded-full bg-white/20">
+            <div className="userImage w-[clamp(40px,60px,80px)] aspect-square rounded-full bg-white/20 z-10">
               {session.data?.user?.image ? (
                 <img
                   src={session.data?.user?.image}
@@ -57,6 +67,21 @@ const VideoArea = () => {
             </div>
           )}
         </div>
+        {setting.screenState && (
+          <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden relative">
+            <div className="overlay z-30 w-full h-full absolute p-3 flex flex-col justify-end">
+              <div className="name font-medium text-white/60 text-sm self-start">
+                {session.data?.user?.name?.split(" ").slice(0, 2).join(" ")}
+              </div>
+            </div>
+            <video
+              autoPlay
+              className="w-full h-full object-cover"
+              style={{ display: setting.screenState ? "block" : "none" }}
+              ref={myScreenElement}
+            ></video>
+          </div>
+        )}
         {meetDetails?.peers.map((user, index) => {
           return user.socketId != socket?.id ? (
             <Screen key={user.socketId} user={user} />
@@ -105,7 +130,12 @@ const User = ({ user }: { user: PeerDetailsType }) => {
 
   return (
     <>
-      <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden">
+      <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden relative">
+      <div className="overlay z-30 w-full h-full absolute p-3 flex flex-col justify-end">
+            <div className="name font-medium text-white/60 text-sm self-start">
+              {user?.name?.split(" ").slice(0, 2).join(" ")}
+            </div>
+          </div>
         <video
           autoPlay
           className="w-full h-full object-cover"
@@ -114,7 +144,7 @@ const User = ({ user }: { user: PeerDetailsType }) => {
         ></video>
         <audio ref={audioElement} autoPlay className="hidden"></audio>
         {!user.video && (
-          <div className="userImage w-[clamp(40px,60px,80px)] flex items-center justify-center text-white aspect-square rounded-full bg-white/20">
+          <div className="userImage w-[clamp(40px,60px,80px)] flex items-1enter justify-center text-white/60 aspect-square rounded-full bg-white/20">
             {user.image ? (
               <img
                 src={user.image}
@@ -155,7 +185,7 @@ const Screen = ({ user }: { user: PeerDetailsType }) => {
             ref={screenElement}
           ></video>
           {!user.screen && (
-            <div className="userImage w-[clamp(40px,60px,80px)] flex items-center justify-center text-white aspect-square rounded-full bg-white/20">
+            <div className="userImage w-[clamp(40px,60px,80px)] flex items-1enter justify-center text-white/60 aspect-square rounded-full bg-white/20">
               {user.image ? (
                 <img
                   src={user.image}
