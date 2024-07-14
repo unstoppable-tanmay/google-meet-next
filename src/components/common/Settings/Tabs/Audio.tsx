@@ -1,39 +1,16 @@
-import { mediaDevices, settings } from "@/state/atom";
+import { settings } from "@/state/atom";
 import React, { useEffect, useRef } from "react";
 import Select from "react-select";
 import { useRecoilState } from "recoil";
 import Sound from "../../Sound";
+import { useMediaStream } from "@/provider/MediaProvider";
 
 const Audio = () => {
   const [setting, setSettings] = useRecoilState(settings);
-  const [mediaDevice, setMediaDevices] = useRecoilState(mediaDevices);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Get Devices
-  useEffect(() => {
-    const getDevices = async () => {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-
-      const micDevices = devices.filter((e) => e.kind == "audioinput");
-      const speakerDevices = devices.filter((e) => e.kind == "audiooutput");
-      const cameraDevices = devices.filter((e) => e.kind == "videoinput");
-
-      setMediaDevices({
-        microphone: micDevices.map((e) => ({ value: e, label: e.label })),
-        speaker: speakerDevices.map((e) => ({ value: e, label: e.label })),
-        camera: cameraDevices.map((e) => ({ value: e, label: e.label })),
-        screen: [],
-      });
-
-      setSettings((prev) => ({
-        ...prev,
-        microphone: micDevices[0],
-        speaker: speakerDevices[0],
-        camera: cameraDevices[0],
-      }));
-    };
-    getDevices();
-  }, [setMediaDevices, setSettings]);
+  const { microphones, speakers, getAudioStream, stopAudioStream } =
+    useMediaStream();
 
   // Add Audio
   useEffect(() => {
@@ -44,20 +21,14 @@ const Audio = () => {
         return;
 
       if (!open) {
-        if (audioElement && audioElement.srcObject) {
-          const stream = audioElement.srcObject as MediaStream;
-          stream.getTracks().forEach((track) => track.stop());
-        }
-        return;
+        return stopAudioStream(setting.microphone.deviceId);
       }
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: { deviceId: setting.microphone?.deviceId },
-        });
-        if (audioElement!.srcObject !== stream) {
-          audioElement!.srcObject = stream;
-        }
+        if (audioElement)
+          audioElement.srcObject = await getAudioStream(
+            setting.microphone.deviceId
+          );
       } catch (error) {
         console.error("Error accessing audio stream:", error);
       }
@@ -65,13 +36,9 @@ const Audio = () => {
     addAudio();
 
     return () => {
-      console.log("return audio")
-      if (audioElement && audioElement.srcObject) {
-        const stream = audioElement.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
-      }
+      stopAudioStream(setting.microphone?.deviceId);
     };
-  }, [setting.microphone]);
+  }, [setting.microphone, getAudioStream, stopAudioStream]);
 
   return (
     <>
@@ -89,12 +56,12 @@ const Audio = () => {
                     value: setting.microphone,
                     label: setting.microphone.label,
                   }
-                : mediaDevice.microphone[0]
+                : microphones[0]
             }
             onChange={(e) => {
               setSettings({ ...setting, microphone: e?.value });
             }}
-            options={mediaDevice.microphone}
+            options={microphones}
           />
           <Sound />
         </div>
@@ -113,12 +80,12 @@ const Audio = () => {
                     value: setting.speaker,
                     label: setting.speaker.label,
                   }
-                : mediaDevice.speaker[0]
+                : speakers[0]
             }
             onChange={(e) => {
               setSettings({ ...setting, speaker: e?.value });
             }}
-            options={mediaDevice.speaker}
+            options={speakers}
           />
           <button className="test px-4 py-3 -ml-4 rounded-full hover:text-[#3583eb] hover:bg-[#3583eb]/5 text-sm">
             Test

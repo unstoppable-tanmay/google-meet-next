@@ -1,4 +1,5 @@
-import { mediaDevices, settings } from "@/state/atom";
+import { useMediaStream } from "@/provider/MediaProvider";
+import { settings } from "@/state/atom";
 import React, { useEffect, useRef } from "react";
 import Select from "react-select";
 import { useRecoilState } from "recoil";
@@ -6,33 +7,22 @@ import { useRecoilState } from "recoil";
 const Video = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [setting, setSettings] = useRecoilState(settings);
-  const [mediaDevice, setMediaDevices] = useRecoilState(mediaDevices);
 
-  // Get Devices
-  useEffect(() => {
-    const getDevices = async () => {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-
-      const micDevices = devices.filter((e) => e.kind == "audioinput");
-      const speakerDevices = devices.filter((e) => e.kind == "audiooutput");
-      const cameraDevices = devices.filter((e) => e.kind == "videoinput");
-
-      setMediaDevices({
-        microphone: micDevices.map((e) => ({ value: e, label: e.label })),
-        speaker: speakerDevices.map((e) => ({ value: e, label: e.label })),
-        camera: cameraDevices.map((e) => ({ value: e, label: e.label })),
-        screen: [],
-      });
-
-      setSettings((prev) => ({
-        ...prev,
-        microphone: micDevices[0],
-        speaker: speakerDevices[0],
-        camera: cameraDevices[0],
-      }));
-    };
-    getDevices();
-  }, [setMediaDevices, setSettings]);
+  const {
+    cameras,
+    microphones,
+    screens,
+    speakers,
+    getAudioStream,
+    getScreenStream,
+    getVideoStream,
+    audioStream,
+    screenStream,
+    videoStream,
+    stopAudioStream,
+    stopScreenStream,
+    stopVideoStream,
+  } = useMediaStream();
 
   // Add Camera
   useEffect(() => {
@@ -42,19 +32,14 @@ const Video = () => {
       if (videoRef === null || setting.camera?.deviceId === undefined) return;
 
       if (!open) {
-        if (videoElement && videoElement.srcObject) {
-          const stream = videoElement.srcObject as MediaStream;
-          stream.getTracks().forEach((track) => track.stop());
-        }
-        return;
+        return stopVideoStream(setting.camera.deviceId);
       }
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: setting.camera?.deviceId },
-        });
-        if (videoElement!.srcObject !== stream) {
-          videoElement!.srcObject = stream;
+        if (videoElement) {
+          videoElement.srcObject = await getVideoStream(
+            setting.camera.deviceId
+          );
         }
       } catch (error) {
         console.error("Error accessing video stream:", error);
@@ -63,13 +48,9 @@ const Video = () => {
     addVideo();
 
     return () => {
-      console.log("return video")
-      if (videoElement && videoElement.srcObject) {
-        const stream = videoElement.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
-      }
+      stopVideoStream(setting.camera?.deviceId);
     };
-  }, [setting.camera]);
+  }, [setting.camera, getVideoStream, stopVideoStream]);
 
   return (
     <>
@@ -85,12 +66,12 @@ const Video = () => {
                     value: setting.camera,
                     label: setting.camera.label,
                   }
-                : mediaDevice.camera[0]
+                : cameras[0]
             }
             onChange={(e) => {
               setSettings({ ...setting, camera: e?.value });
             }}
-            options={mediaDevice.camera}
+            options={cameras}
           />
           <div className="camera-display w-[105px] aspect-[16/8.5] bg-black">
             <video

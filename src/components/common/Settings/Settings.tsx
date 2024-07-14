@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect,useState } from "react";
 import { useRecoilState } from "recoil";
-import Select from "react-select";
 
 import Icon from "../Icon";
 
@@ -11,10 +10,10 @@ import { HiOutlineCog } from "react-icons/hi";
 import { MdOutlineSpeaker } from "react-icons/md";
 import { IoCloseOutline } from "react-icons/io5";
 
-import { mediaDevices, settings, settingsState } from "@/state/atom";
-import Sound from "../Sound";
+import { settingsState } from "@/state/atom";
 import Audio from "./Tabs/Audio";
 import Video from "./Tabs/Video";
+import { useMediaStream } from "@/provider/MediaProvider";
 
 const Settings = () => {
   const [tab, setTab] = useState(0);
