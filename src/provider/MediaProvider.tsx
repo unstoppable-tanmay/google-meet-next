@@ -1,6 +1,5 @@
 import React, {
   createContext,
-  useRef,
   useContext,
   ReactNode,
   useCallback,
@@ -17,9 +16,9 @@ interface MediaStreamContextProps {
   videoStream: MediaStream | null;
   audioStream: MediaStream | null;
   screenStream: MediaStream | null;
-  getVideoStream: (deviceId?: string) => Promise<MediaStream|null>;
-  getAudioStream: (deviceId?: string) => Promise<MediaStream|null>;
-  getScreenStream: (deviceId?: string) => Promise<MediaStream|null>;
+  getVideoStream: (deviceId?: string) => Promise<MediaStream | null>;
+  getAudioStream: (deviceId?: string) => Promise<MediaStream | null>;
+  getScreenStream: (deviceId?: string) => Promise<MediaStream | null>;
   stopVideoStream: (deviceId?: string) => void;
   stopAudioStream: (deviceId?: string) => void;
   stopScreenStream: (deviceId?: string) => void;
@@ -42,9 +41,9 @@ export const useMediaStream = (): MediaStreamContextProps => {
 };
 
 export const MediaStreamProvider = ({ children }: { children: ReactNode }) => {
-  const videoStreamRef = useRef<MediaStream | null>(null);
-  const audioStreamRef = useRef<MediaStream | null>(null);
-  const screenStreamRef = useRef<MediaStream | null>(null);
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
 
   const [microphones, setMicrophones] = useState<MediaDevice[]>([]);
   const [speakers, setSpeakers] = useState<MediaDevice[]>([]);
@@ -57,12 +56,12 @@ export const MediaStreamProvider = ({ children }: { children: ReactNode }) => {
         video: deviceId ? { deviceId: { exact: deviceId } } : true,
       };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      videoStreamRef.current = stream;
+      setVideoStream(stream);
 
-      return stream
+      return stream;
     } catch (error) {
       console.error("Error accessing video stream:", error);
-      return null
+      return null;
     }
   }, []);
 
@@ -72,12 +71,12 @@ export const MediaStreamProvider = ({ children }: { children: ReactNode }) => {
         audio: deviceId ? { deviceId: { exact: deviceId } } : true,
       };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      audioStreamRef.current = stream;
+      setAudioStream(stream);
 
-      return stream
+      return stream;
     } catch (error) {
       console.error("Error accessing audio stream:", error);
-      return null
+      return null;
     }
   }, []);
 
@@ -86,43 +85,44 @@ export const MediaStreamProvider = ({ children }: { children: ReactNode }) => {
       const stream = await (navigator.mediaDevices as any).getDisplayMedia({
         video: true,
       });
-      screenStreamRef.current = stream;
+      setScreenStream(stream);
 
-      return stream
+      return stream;
     } catch (error) {
       console.error("Error accessing screen stream:", error);
-      return null
+      return null;
     }
   }, []);
 
   const stopStream = useCallback(
     (
-      streamRef: React.MutableRefObject<MediaStream | null>,
+      setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>,
+      stream: MediaStream | null,
       deviceId?: string
     ) => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => {
+      if (stream) {
+        stream.getTracks().forEach((track) => {
           if (!deviceId || track.getSettings().deviceId === deviceId) {
             track.stop();
           }
         });
-        streamRef.current = null;
+        setStream(null);
       }
     },
     []
   );
 
   const stopVideoStream = useCallback(
-    (deviceId?: string) => stopStream(videoStreamRef, deviceId),
-    [stopStream]
+    (deviceId?: string) => stopStream(setVideoStream, videoStream, deviceId),
+    [stopStream, videoStream]
   );
   const stopAudioStream = useCallback(
-    (deviceId?: string) => stopStream(audioStreamRef, deviceId),
-    [stopStream]
+    (deviceId?: string) => stopStream(setAudioStream, audioStream, deviceId),
+    [stopStream, audioStream]
   );
   const stopScreenStream = useCallback(
-    (deviceId?: string) => stopStream(screenStreamRef, deviceId),
-    [stopStream]
+    (deviceId?: string) => stopStream(setScreenStream, screenStream, deviceId),
+    [stopStream, screenStream]
   );
 
   const updateDevices = useCallback(async () => {
@@ -156,9 +156,9 @@ export const MediaStreamProvider = ({ children }: { children: ReactNode }) => {
   }, [updateDevices]);
 
   const value = {
-    videoStream: videoStreamRef.current,
-    audioStream: audioStreamRef.current,
-    screenStream: screenStreamRef.current,
+    videoStream,
+    audioStream,
+    screenStream,
     getVideoStream,
     getAudioStream,
     getScreenStream,

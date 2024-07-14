@@ -13,11 +13,7 @@ import VideoArea from "./components/VideoArea";
 import { BiSolidBuildings } from "react-icons/bi";
 import { useSession } from "next-auth/react";
 import { useSocket } from "@/provider/SocketContext";
-import {
-  MeetType,
-  PeerDetailsType,
-  UserType,
-} from "@/types/types";
+import { MeetType, PeerDetailsType, UserType } from "@/types/types";
 import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
 import { useData } from "@/provider/DataProvider";
 import AskingComp from "../common/AskingComp";
@@ -27,6 +23,10 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
   const { socket } = useSocket();
   const {
+    producerTransport,
+    consumerTransports,
+    consumingTransports,
+    device,
     joinRoom,
     VideoManager,
     AudioManager,
@@ -188,10 +188,21 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
   }, [setting.screenState, socket]);
 
   useEffect(() => {
+    // CleanUp
     return () => {
       stopAudioStream();
       stopVideoStream();
       stopScreenStream();
+
+      producerTransport.current?.close();
+      consumerTransports.current.map((e) => e.consumer.close());
+      consumerTransports.current = [];
+      consumingTransports.current = [];
+      producerTransport.current = null;
+      device.current = null;
+
+      setMeetDetails(null);
+      setUserToAdmit(null);
     };
   }, []);
 
