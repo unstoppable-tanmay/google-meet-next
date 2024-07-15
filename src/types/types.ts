@@ -72,4 +72,10 @@ export type SettingType = {
   screenState: boolean;
   caption: boolean;
   emojies: boolean;
+  
+  info: boolean,
+  users: boolean,
+  message: boolean,
+  activities: boolean,
+  setting: boolean
 };

@@ -30,6 +30,12 @@ export const settings = atom<SettingType>({
     screenState: false,
     caption: false,
     emojies: false,
+
+    info: false,
+    users: false,
+    message: false,
+    activities: false,
+    setting: false
   },
   // effects_UNSTABLE: [persistAtom],
 });
