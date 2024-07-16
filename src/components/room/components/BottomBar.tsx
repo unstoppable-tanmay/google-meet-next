@@ -26,11 +26,15 @@ import { FaRegHandPaper } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { RiShapesFill, RiShapesLine } from "react-icons/ri";
 import { HiOutlineUsers, HiUsers } from "react-icons/hi";
+import { useSession } from "next-auth/react";
+import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
 
 const BottomBar = () => {
   const [setting, setSettings] = useRecoilState(settings);
   const [raiseHand, setRaiseHand] = useState(false);
   const [join, setJoin] = useRecoilState(joined);
+  const session = useSession();
+  const [meetDetails, setMeetDetails] = useRecoilState(meetDetailsAtom);
   return (
     <div className="wrapper flex flex-col">
       <div className="emojies"></div>
@@ -122,7 +126,7 @@ const BottomBar = () => {
         <div className="lastIcons flex items-center justify-end flex-grow basis-1 gap-5 text-white font-bold text-2xl">
           {setting.info ? (
             <MdInfo
-              className="cursor-pointer"
+              className="cursor-pointer text-[#a8c7fa]"
               onClick={(e) => {
                 setSettings((prev) => ({ ...prev, info: false }));
               }}
@@ -144,7 +148,7 @@ const BottomBar = () => {
           )}
           {setting.users ? (
             <HiUsers
-              className="cursor-pointer"
+              className="cursor-pointer text-[#a8c7fa]"
               onClick={(e) => {
                 setSettings((prev) => ({ ...prev, users: false }));
               }}
@@ -166,7 +170,7 @@ const BottomBar = () => {
           )}
           {setting.message ? (
             <MdMessage
-              className="cursor-pointer"
+              className="cursor-pointer text-[#a8c7fa]"
               onClick={(e) => {
                 setSettings((prev) => ({ ...prev, message: false }));
               }}
@@ -188,7 +192,7 @@ const BottomBar = () => {
           )}
           {setting.activities ? (
             <RiShapesFill
-              className="cursor-pointer"
+              className="cursor-pointer text-[#a8c7fa]"
               onClick={(e) => {
                 setSettings((prev) => ({ ...prev, activities: false }));
               }}
@@ -208,9 +212,10 @@ const BottomBar = () => {
               }}
             />
           )}
-          {setting.setting ? (
+          {meetDetails?.admin.email === session.data?.user?.email &&
+          setting.setting ? (
             <MdLockPerson
-              className="cursor-pointer"
+              className="cursor-pointer text-[#a8c7fa]"
               onClick={(e) => {
                 setSettings((prev) => ({ ...prev, setting: false }));
               }}

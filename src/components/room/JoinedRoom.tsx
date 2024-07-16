@@ -289,6 +289,14 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
               {rightBoxElement}
             </motion.div>
           </motion.div>
+          <motion.div
+            animate={
+              setting.emojies
+                ? { height: "50px", opacity: 1 }
+                : { height: "0px", opacity: 0 }
+            }
+            className="emojies flex items-center justify-center my-1"
+          ></motion.div>
           <BottomBar />
         </section>
       )}
