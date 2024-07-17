@@ -433,29 +433,41 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!screenProducer.current) {
         const stream = await getScreenStream();
 
-        screenProducer.current = await producerTransport.current?.produce({
-          ...video_params,
-          track: stream?.getVideoTracks()[0],
-          appData: { socketId: socket.id!, type: "screen" },
-        })!;
+        if (stream) {
+          screenProducer.current = await producerTransport.current?.produce({
+            ...video_params,
+            track: stream?.getVideoTracks()[0],
+            appData: { socketId: socket.id!, type: "screen" },
+          })!;
 
-        stream?.getVideoTracks()[0].addEventListener("ended", () => {
+          if (screenProducer.current) {
+            socket?.emit("user-update", {
+              socketId: socket.id,
+              roomName: roomId,
+              data: { screen: setting } as Partial<PeerDetailsType>,
+            });
+
+            stream?.getVideoTracks()[0].addEventListener("ended", () => {
+              setSettings((prev) => ({ ...prev, screenState: false }));
+              socket?.emit("user-update", {
+                socketId: socket.id,
+                roomName: roomId,
+                data: { screen: false } as Partial<PeerDetailsType>,
+              });
+            });
+
+            screenProducer.current.on("trackended", () => {
+              console.log("screen track ended");
+            });
+
+            screenProducer.current.on("transportclose", () => {
+              console.log("screen transport ended");
+              screenProducer.current?.close();
+            });
+          }
+        } else {
           setSettings((prev) => ({ ...prev, screenState: false }));
-          socket?.emit("user-update", {
-            socketId: socket.id,
-            roomName: roomId,
-            data: { screen: false } as Partial<PeerDetailsType>,
-          });
-        });
-
-        screenProducer.current.on("trackended", () => {
-          console.log("screen track ended");
-        });
-
-        screenProducer.current.on("transportclose", () => {
-          console.log("screen transport ended");
-          screenProducer.current?.close();
-        });
+        }
       } else {
         const stream = await getScreenStream();
 
@@ -476,6 +488,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     } else {
       stopScreenStream();
       screenProducer.current?.pause();
+
+      socket?.emit("user-update", {
+        socketId: socket.id,
+        roomName: roomId,
+        data: { screen: setting } as Partial<PeerDetailsType>,
+      });
     }
   };
 

@@ -262,7 +262,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
           <Spinner size="lg" /> Loading...
         </motion.div>
       ) : (
-        <section className="w-full h-screen bg-[#202124] flex flex-col">
+        <section className="w-full h-screen bg-[#202124] flex flex-col overflow-hidden">
           {isPopoverOpen && userToAdmit && (
             <AskingComp user={null} onAdmit={handleAdmit} onDeny={handleDeny} />
           )}
@@ -275,7 +275,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
           )}
           <motion.div
             layout
-            className="responsive-area flex-1 p-2 w-full flex gap-2"
+            className="responsive-area flex-1 p-2 w-full flex gap-2 overflow-hidden"
           >
             <VideoArea />
             <motion.div
@@ -284,7 +284,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
                 rightBox ? { marginRight: "0%" } : { marginRight: "-358px" }
               }
               transition={{ type: "spring", bounce: 0.1, duration: 0.4 }}
-              className="rightArea w-[350px] h-full bg-white rounded-lg flex-shrink-0"
+              className="rightArea w-[350px] h-full bg-white rounded-lg flex-shrink-0 overflow-y-scroll no-scrollbar"
             >
               {rightBoxElement}
             </motion.div>

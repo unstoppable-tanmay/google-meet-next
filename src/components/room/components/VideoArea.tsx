@@ -73,7 +73,7 @@ const VideoArea = () => {
             </div>
           )}
         </div>
-        {setting.screenState && (
+        {setting.screenState && screenStream && (
           <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden relative">
             <div className="overlay z-30 w-full h-full absolute p-3 flex flex-col justify-end">
               <div className="name font-medium text-white/60 text-sm self-start">
