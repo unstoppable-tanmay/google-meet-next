@@ -28,6 +28,7 @@ import { RiShapesFill, RiShapesLine } from "react-icons/ri";
 import { HiOutlineUsers, HiUsers } from "react-icons/hi";
 import { useSession } from "next-auth/react";
 import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
+import Menu from "./Menu";
 
 const BottomBar = () => {
   const [setting, setSettings] = useRecoilState(settings);
@@ -111,9 +112,7 @@ const BottomBar = () => {
           >
             <FaRegHandPaper />
           </SmallButtons>
-          <SmallButtons on={false} onColor="#87b3f8">
-            <BsThreeDotsVertical />
-          </SmallButtons>
+            <Menu/>
           <SmallButtons
             on
             onClick={(e) => {

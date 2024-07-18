@@ -143,6 +143,7 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
       },
       (data: boolean | null) => {
         console.log(data);
+        setRoomStateLoading(false);
         data == null
           ? toast("You are denied", {
               hideProgressBar: true,
@@ -158,7 +159,6 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
             });
       }
     );
-    setRoomStateLoading(false);
   };
   const askToPresent = () => {
     toast("not implemented yet", {
