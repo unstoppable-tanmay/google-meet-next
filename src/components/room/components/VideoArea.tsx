@@ -50,7 +50,7 @@ const VideoArea = () => {
         <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden relative">
           <div className="overlay z-30 w-full h-full absolute p-3 flex flex-col justify-end">
             <div className="name font-medium text-white/60 text-sm self-start">
-              {session.data?.user?.name?.split(" ").slice(0, 2).join(" ")}
+              {session.data?.user?.name?.split(" ").slice(0, 2).join(" ")}(You)
             </div>
           </div>
           <video
@@ -73,7 +73,7 @@ const VideoArea = () => {
             </div>
           )}
         </div>
-        {setting.screenState && (
+        {setting.screenState && screenStream && (
           <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden relative">
             <div className="overlay z-30 w-full h-full absolute p-3 flex flex-col justify-end">
               <div className="name font-medium text-white/60 text-sm self-start">
@@ -135,35 +135,36 @@ const User = ({ user }: { user: PeerDetailsType }) => {
   }, [tracks, user]);
 
   return (
-    <>
-      <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden relative">
-        <div className="overlay z-30 w-full h-full absolute p-3 flex flex-col justify-end">
-          <div className="name font-medium text-white/60 text-sm self-start">
-            {user?.name?.split(" ").slice(0, 2).join(" ")}
-          </div>
+    <div
+      className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden relative"
+      id={user.socketId}
+    >
+      <div className="overlay z-30 w-full h-full absolute p-3 flex flex-col justify-end">
+        <div className="name font-medium text-white/60 text-sm self-start">
+          {user?.name?.split(" ").slice(0, 2).join(" ")}
         </div>
-        <video
-          autoPlay
-          className="w-full h-full object-cover"
-          style={{ display: user.video ? "block" : "none" }}
-          ref={videoElement}
-        ></video>
-        <audio ref={audioElement} autoPlay className="hidden"></audio>
-        {!user.video && (
-          <div className="userImage w-[clamp(40px,60px,80px)] flex items-1enter justify-center text-white/60 aspect-square rounded-full bg-white/20">
-            {user.image ? (
-              <img
-                src={user.image}
-                alt=""
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : (
-              user.name[0]
-            )}
-          </div>
-        )}
       </div>
-    </>
+      <video
+        autoPlay
+        className="w-full h-full object-cover"
+        style={{ display: user.video ? "block" : "none" }}
+        ref={videoElement}
+      ></video>
+      <audio ref={audioElement} autoPlay className="hidden"></audio>
+      {!user.video && (
+        <div className="userImage w-[clamp(40px,60px,80px)] flex items-1enter justify-center text-white/60 aspect-square rounded-full bg-white/20">
+          {user.image ? (
+            <img
+              src={user.image}
+              alt=""
+              className="w-full h-full object-cover rounded-full"
+            />
+          ) : (
+            user.name[0]
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 const Screen = ({ user }: { user: PeerDetailsType }) => {
@@ -171,8 +172,12 @@ const Screen = ({ user }: { user: PeerDetailsType }) => {
   const screenElement = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (tracks.find((e) => e.socketId == user.socketId && e.type == "screen")) {
-      screenElement.current!.srcObject = new MediaStream([
+    if (
+      user.screen &&
+      screenElement.current &&
+      tracks.find((e) => e.socketId == user.socketId && e.type == "screen")
+    ) {
+      screenElement.current.srcObject = new MediaStream([
         tracks.find(
           (track) => track.socketId == user.socketId && track.type == "screen"
         )?.tracks!,

@@ -1,23 +1,37 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { useRecoilState } from "recoil";
 import { joined, rightBoxAtom, settings, tracksAtom } from "@/state/atom";
+import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Spinner } from "@nextui-org/react";
 
 import BottomBar from "./components/BottomBar";
 import VideoArea from "./components/VideoArea";
+import AskingComp from "../common/AskingComp";
 
 import { BiSolidBuildings } from "react-icons/bi";
+
+import { MeetType, PeerDetailsType, UserType } from "@/types/types";
+
 import { useSession } from "next-auth/react";
 import { useSocket } from "@/provider/SocketContext";
-import { MeetType, PeerDetailsType, UserType } from "@/types/types";
-import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
 import { useData } from "@/provider/DataProvider";
-import AskingComp from "../common/AskingComp";
 import { useMediaStream } from "@/provider/MediaProvider";
+
+import Info from "./components/RightBoxComponents/Info";
+import Users from "./components/RightBoxComponents/Users";
+import Activities from "./components/RightBoxComponents/Activities";
+import Message from "./components/RightBoxComponents/Message";
+import Setting from "./components/RightBoxComponents/Setting";
 
 const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
@@ -33,21 +47,8 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
     ScreenManager,
   } = useData();
 
-  const {
-    cameras,
-    microphones,
-    screens,
-    speakers,
-    getAudioStream,
-    getScreenStream,
-    getVideoStream,
-    audioStream,
-    screenStream,
-    videoStream,
-    stopAudioStream,
-    stopScreenStream,
-    stopVideoStream,
-  } = useMediaStream();
+  const { stopAudioStream, stopScreenStream, stopVideoStream } =
+    useMediaStream();
 
   // whole session join
   const [join, setJoin] = useRecoilState(joined);
@@ -67,6 +68,9 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
   const [setting, setSettings] = useRecoilState(settings);
   const [meetDetails, setMeetDetails] = useRecoilState(meetDetailsAtom);
+  const [rightBoxElement, setRightBoxElement] = useState<ReactNode | null>(
+    null
+  );
 
   // Joining Logic
   useEffect(() => {
@@ -138,6 +142,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
     }
   }, []);
 
+  // handle admit
   const handleAdmit = useCallback(() => {
     if (callback) {
       console.log("called handleAdmit");
@@ -146,6 +151,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
     setIsPopoverOpen(false);
   }, [callback]);
 
+  // handle deny
   const handleDeny = useCallback(() => {
     if (callback) {
       console.log("called handleDeny");
@@ -154,6 +160,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
     setIsPopoverOpen(false);
   }, [callback]);
 
+  // camera update
   useEffect(() => {
     if (socket) {
       VideoManager(setting.cameraState, socket);
@@ -165,6 +172,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
     }
   }, [setting.cameraState, socket]);
 
+  // microphone update
   useEffect(() => {
     if (socket) {
       AudioManager(setting.microphoneState, socket);
@@ -176,9 +184,10 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
     }
   }, [setting.microphoneState, socket]);
 
+  // screen update
   useEffect(() => {
     if (socket) {
-      ScreenManager(setting.screenState, socket);
+      ScreenManager(setting.screenState, socket, roomId);
       socket?.emit("user-update", {
         socketId: socket.id,
         roomName: roomId,
@@ -187,8 +196,8 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
     }
   }, [setting.screenState, socket]);
 
+  // CleanUp
   useEffect(() => {
-    // CleanUp
     return () => {
       stopAudioStream();
       stopVideoStream();
@@ -203,8 +212,43 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
 
       setMeetDetails(null);
       setUserToAdmit(null);
+
+      socket?.close();
     };
   }, []);
+
+  // rightbox element and open logic
+  useEffect(() => {
+    if (
+      setting.info ||
+      setting.users ||
+      setting.activities ||
+      setting.message ||
+      setting.setting
+    ) {
+      setRightBoxAtom(true);
+    } else {
+      setRightBoxAtom(false);
+    }
+
+    if (setting.info) {
+      setRightBoxElement(<Info />);
+    } else if (setting.users) {
+      setRightBoxElement(<Users />);
+    } else if (setting.activities) {
+      setRightBoxElement(<Activities />);
+    } else if (setting.message) {
+      setRightBoxElement(<Message />);
+    } else if (setting.setting) {
+      setRightBoxElement(<Setting />);
+    }
+  }, [
+    setting.info,
+    setting.users,
+    setting.activities,
+    setting.message,
+    setting.setting,
+  ]);
 
   return (
     <AnimatePresence>
@@ -218,7 +262,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
           <Spinner size="lg" /> Loading...
         </motion.div>
       ) : (
-        <section className="w-full h-screen bg-[#202124] flex flex-col">
+        <section className="w-full h-screen bg-[#202124] flex flex-col overflow-hidden">
           {isPopoverOpen && userToAdmit && (
             <AskingComp user={null} onAdmit={handleAdmit} onDeny={handleDeny} />
           )}
@@ -231,7 +275,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
           )}
           <motion.div
             layout
-            className="responsive-area flex-1 p-2 w-full flex gap-2"
+            className="responsive-area flex-1 p-2 w-full flex gap-2 overflow-hidden"
           >
             <VideoArea />
             <motion.div
@@ -240,9 +284,19 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
                 rightBox ? { marginRight: "0%" } : { marginRight: "-358px" }
               }
               transition={{ type: "spring", bounce: 0.1, duration: 0.4 }}
-              className="rightArea w-[350px] h-full bg-white rounded-lg flex-shrink-0"
-            ></motion.div>
+              className="rightArea w-[350px] h-full bg-white rounded-lg flex-shrink-0 overflow-y-scroll no-scrollbar"
+            >
+              {rightBoxElement}
+            </motion.div>
           </motion.div>
+          <motion.div
+            animate={
+              setting.emojies
+                ? { height: "50px", opacity: 1 }
+                : { height: "0px", opacity: 0 }
+            }
+            className="emojies flex items-center justify-center my-1"
+          ></motion.div>
           <BottomBar />
         </section>
       )}

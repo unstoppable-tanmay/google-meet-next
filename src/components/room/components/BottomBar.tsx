@@ -24,13 +24,17 @@ import {
 import { LuScreenShare, LuScreenShareOff } from "react-icons/lu";
 import { FaRegHandPaper } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { RiShapesLine } from "react-icons/ri";
+import { RiShapesFill, RiShapesLine } from "react-icons/ri";
 import { HiOutlineUsers, HiUsers } from "react-icons/hi";
+import { useSession } from "next-auth/react";
+import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
 
 const BottomBar = () => {
   const [setting, setSettings] = useRecoilState(settings);
   const [raiseHand, setRaiseHand] = useState(false);
   const [join, setJoin] = useRecoilState(joined);
+  const session = useSession();
+  const [meetDetails, setMeetDetails] = useRecoilState(meetDetailsAtom);
   return (
     <div className="wrapper flex flex-col">
       <div className="emojies"></div>
@@ -120,12 +124,117 @@ const BottomBar = () => {
           </SmallButtons>
         </div>
         <div className="lastIcons flex items-center justify-end flex-grow basis-1 gap-5 text-white font-bold text-2xl">
-          <MdInfoOutline className="cursor-pointer" /> {/* <MdInfo /> */}
-          <HiOutlineUsers className="cursor-pointer" /> {/* <HiUsers /> */}
-          <MdOutlineMessage className="cursor-pointer" /> {/* <MdMessage /> */}
-          <RiShapesLine className="cursor-pointer" /> {/* <RiShapesFill /> */}
-          <MdOutlineLockPerson className="cursor-pointer" />{" "}
-          {/* <MdLockPerson /> */}
+          {setting.info ? (
+            <MdInfo
+              className="cursor-pointer text-[#a8c7fa]"
+              onClick={(e) => {
+                setSettings((prev) => ({ ...prev, info: false }));
+              }}
+            />
+          ) : (
+            <MdInfoOutline
+              className="cursor-pointer"
+              onClick={(e) => {
+                setSettings((prev) => ({
+                  ...prev,
+                  info: true,
+                  users: false,
+                  message: false,
+                  activities: false,
+                  setting: false,
+                }));
+              }}
+            />
+          )}
+          {setting.users ? (
+            <HiUsers
+              className="cursor-pointer text-[#a8c7fa]"
+              onClick={(e) => {
+                setSettings((prev) => ({ ...prev, users: false }));
+              }}
+            />
+          ) : (
+            <HiOutlineUsers
+              className="cursor-pointer"
+              onClick={(e) => {
+                setSettings((prev) => ({
+                  ...prev,
+                  info: false,
+                  users: true,
+                  message: false,
+                  activities: false,
+                  setting: false,
+                }));
+              }}
+            />
+          )}
+          {setting.message ? (
+            <MdMessage
+              className="cursor-pointer text-[#a8c7fa]"
+              onClick={(e) => {
+                setSettings((prev) => ({ ...prev, message: false }));
+              }}
+            />
+          ) : (
+            <MdOutlineMessage
+              className="cursor-pointer"
+              onClick={(e) => {
+                setSettings((prev) => ({
+                  ...prev,
+                  info: false,
+                  users: false,
+                  message: true,
+                  activities: false,
+                  setting: false,
+                }));
+              }}
+            />
+          )}
+          {setting.activities ? (
+            <RiShapesFill
+              className="cursor-pointer text-[#a8c7fa]"
+              onClick={(e) => {
+                setSettings((prev) => ({ ...prev, activities: false }));
+              }}
+            />
+          ) : (
+            <RiShapesLine
+              className="cursor-pointer"
+              onClick={(e) => {
+                setSettings((prev) => ({
+                  ...prev,
+                  info: false,
+                  users: false,
+                  message: false,
+                  activities: true,
+                  setting: false,
+                }));
+              }}
+            />
+          )}
+          {meetDetails?.admin.email === session.data?.user?.email &&
+          setting.setting ? (
+            <MdLockPerson
+              className="cursor-pointer text-[#a8c7fa]"
+              onClick={(e) => {
+                setSettings((prev) => ({ ...prev, setting: false }));
+              }}
+            />
+          ) : (
+            <MdOutlineLockPerson
+              className="cursor-pointer"
+              onClick={(e) => {
+                setSettings((prev) => ({
+                  ...prev,
+                  info: false,
+                  users: false,
+                  message: false,
+                  activities: false,
+                  setting: true,
+                }));
+              }}
+            />
+          )}
         </div>
       </nav>
     </div>

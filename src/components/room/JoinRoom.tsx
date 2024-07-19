@@ -57,7 +57,6 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
   const [room, setRoom] = useState<MeetType | null>(null);
 
   const session = useSession();
-  const router = useRouter();
 
   // Add Camera
   useEffect(() => {
@@ -368,23 +367,28 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
           </div>
         </div>
         {roomStateLoading ? (
-          <div className="flex items-center justify-center w-full">
-            <Spinner />
+          <div className="flex items-center justify-center w-[clamp(400px,400px,90vw)]">
+            <Spinner size="lg" className="scale-110" />
           </div>
         ) : (
-          <div className="joining flex flex-col items-center justify-center">
+          <div className="joining flex flex-col items-center justify-center w-[clamp(400px,400px,90vw)]">
             <div className="heading text-2xl mb-6">Ready to join?</div>
             <div className="available text-sm font-semibold text-black/60 mb-2 flex gap-1">
-              {room?.peers?.length &&
+              {room?.peers?.length ? (
                 room.peers?.slice(3).map((e) => {
                   return (
                     <>
                       <Avatar src={e.image} size="sm" />
                     </>
                   );
-                })}
-              {room?.peers?.length && room?.peers?.length > 3 && (
-                <Avatar>+</Avatar>
+                })
+              ) : (
+                <></>
+              )}
+              {room?.peers?.length ? (
+                room?.peers?.length > 3 && <Avatar>+</Avatar>
+              ) : (
+                <></>
               )}
             </div>
             <div className="available text-xs font-semibold text-black/60 mb-4">
@@ -399,7 +403,7 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
                   here
                 </>
               ) : (
-                "No one else is here"
+                "No one is here"
               )}
             </div>
             <div className="buttons flex gap-2 items-center text-sm font-medium mb-10">

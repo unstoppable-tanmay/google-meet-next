@@ -19,7 +19,6 @@ import axios from "axios";
 import { ServerResponse } from "@/types/types";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
-import AskingComp from "./common/AskingComp";
 
 const Home = () => {
   const session = useSession();
@@ -45,7 +44,12 @@ const Home = () => {
 
   const handleStartInstantMeet = async () => {
     try {
-      if (session.status !== "authenticated") return;
+      if (session.status !== "authenticated")
+        return toast("YOu have to signin for creating meet", {
+          hideProgressBar: true,
+          type: "info",
+          position: "bottom-right",
+        });
       setLoading(true);
       if (session.status === "authenticated") {
         const res = await axios.post(
