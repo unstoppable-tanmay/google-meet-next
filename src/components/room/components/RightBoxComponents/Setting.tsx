@@ -5,10 +5,13 @@ import { MdContentCopy, MdDone } from "react-icons/md";
 import { settings } from "@/state/atom";
 import { useRecoilState } from "recoil";
 import { Radio, RadioGroup, Switch } from "@nextui-org/react";
+import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
 
 const Setting = () => {
   const pathname = usePathname();
   const [setting, setSettings] = useRecoilState(settings);
+  const [meetDetails, setMeetDetails] = useRecoilState(meetDetailsAtom);
+
   return (
     <div className="flex flex-col">
       <div className="header p-6 flex items-center justify-between text-[#5c5c5e]">
@@ -34,6 +37,13 @@ const Setting = () => {
         <div className="header flex items-center justify-between">
           <div className="heading font-semibold">Host management</div>
           <Switch
+            isSelected={meetDetails?.settings.hostManagement}
+            onValueChange={(e) => {
+              setMeetDetails((prev) => ({
+                ...prev!,
+                settings: { ...prev!.settings, hostManagement: e },
+              }));
+            }}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
@@ -58,6 +68,13 @@ const Setting = () => {
             Share Their Screen
           </div>
           <Switch
+            isDisabled={!meetDetails?.settings.hostManagement}
+            onValueChange={(e) => {
+              setMeetDetails((prev) => ({
+                ...prev!,
+                settings: { ...prev!.settings, shareScreen: e },
+              }));
+            }}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
@@ -74,6 +91,13 @@ const Setting = () => {
             Send Chat Messages
           </div>
           <Switch
+            isDisabled={!meetDetails?.settings.hostManagement}
+            onValueChange={(e) => {
+              setMeetDetails((prev) => ({
+                ...prev!,
+                settings: { ...prev!.settings, sendChatMessage: e },
+              }));
+            }}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
@@ -88,6 +112,13 @@ const Setting = () => {
         <div className="header flex items-center justify-between mt-4 pl-4">
           <div className="heading text-sm font-semibold">Send Reaction</div>
           <Switch
+            isDisabled={!meetDetails?.settings.hostManagement}
+            onValueChange={(e) => {
+              setMeetDetails((prev) => ({
+                ...prev!,
+                settings: { ...prev!.settings, sendReaction: e },
+              }));
+            }}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
@@ -104,6 +135,13 @@ const Setting = () => {
             Turn On Their Microphone
           </div>
           <Switch
+            isDisabled={!meetDetails?.settings.hostManagement}
+            onValueChange={(e) => {
+              setMeetDetails((prev) => ({
+                ...prev!,
+                settings: { ...prev!.settings, turnOnMic: e },
+              }));
+            }}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
@@ -124,6 +162,13 @@ const Setting = () => {
             Turn On Their Video
           </div>
           <Switch
+            isDisabled={!meetDetails?.settings.hostManagement}
+            onValueChange={(e) => {
+              setMeetDetails((prev) => ({
+                ...prev!,
+                settings: { ...prev!.settings, turnOnVideo: e },
+              }));
+            }}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
@@ -157,6 +202,12 @@ const Setting = () => {
             Host must join before anyone else
           </div>
           <Switch
+            onValueChange={(e) => {
+              setMeetDetails((prev) => ({
+                ...prev!,
+                settings: { ...prev!.settings, hostMustJoinBeforeAll: e },
+              }));
+            }}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
@@ -169,23 +220,32 @@ const Setting = () => {
           ></Switch>
         </div>
         <div className="heading font-semibold mt-4">Meeting access type</div>
-        <RadioGroup color="warning" className="mt-4 ml-4">
+        <RadioGroup
+          color="warning"
+          className="mt-4 ml-4"
+          onValueChange={(e) => {
+            setMeetDetails((prev) => ({
+              ...prev!,
+              settings: { ...prev!.settings, access: e as "open" | "trusted" },
+            }));
+          }}
+        >
           <Radio
-            value="buenos-aires"
+            value="open"
             description="No one has to ask to join. Anyone can dial
 in."
-            classNames={{ base: "items-start",labelWrapper:"-mt-0.5" }}
+            classNames={{ base: "items-start", labelWrapper: "-mt-0.5" }}
           >
             Open
           </Radio>
           <Radio
-            value="canberra"
+            value="trusted"
             description="People can join without asking if they're
 invited using their Google Account. Everyone
 else must ask to join. Anyone can dial in by
 phone."
-className="mt-3"
-            classNames={{ base: "items-start",labelWrapper:"-mt-0.5" }}
+            className="mt-3"
+            classNames={{ base: "items-start", labelWrapper: "-mt-0.5" }}
           >
             Trusted
           </Radio>

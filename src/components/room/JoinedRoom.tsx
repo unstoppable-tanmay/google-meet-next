@@ -9,7 +9,7 @@ import React, {
 
 import { useRecoilState } from "recoil";
 import { joined, rightBoxAtom, settings, tracksAtom } from "@/state/atom";
-import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
+import { meetDetailsAtom, messagesAtom } from "@/state/JoinedRoomAtom";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Spinner } from "@nextui-org/react";
@@ -72,6 +72,8 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
     null
   );
 
+  const [messages, setMessages] = useRecoilState(messagesAtom);
+
   // Joining Logic
   useEffect(() => {
     if (socket && session.status === "authenticated") {
@@ -96,6 +98,21 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
           setMeetDetails
         );
       });
+
+      socket.on(
+        "message",
+        ({
+          user,
+          roomName,
+          message,
+        }: {
+          user: PeerDetailsType;
+          roomName: string;
+          message: string;
+        }) => {
+          setMessages((prev) => [...prev, { message, user: user.name }]);
+        }
+      );
 
       socket.on(
         "asking-join",
@@ -238,7 +255,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
     } else if (setting.activities) {
       setRightBoxElement(<Activities />);
     } else if (setting.message) {
-      setRightBoxElement(<Message />);
+      setRightBoxElement(<Message room={roomId} />);
     } else if (setting.setting) {
       setRightBoxElement(<Setting />);
     }
@@ -283,7 +300,7 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
               animate={
                 rightBox ? { marginRight: "0%" } : { marginRight: "-358px" }
               }
-              transition={{ type: "spring", bounce: 0.1, duration: 0.4 }}
+              transition={{ type: "spring", bounce: 0.12, duration: 0.4 }}
               className="rightArea w-[350px] h-full bg-white rounded-lg flex-shrink-0 overflow-y-scroll no-scrollbar"
             >
               {rightBoxElement}
@@ -295,8 +312,12 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
                 ? { height: "50px", opacity: 1 }
                 : { height: "0px", opacity: 0 }
             }
-            className="emojies flex items-center justify-center my-1"
-          ></motion.div>
+            className="emojies flex items-center justify-center my-1 z-10"
+          >
+            <div className="emojies rounded-full bg-[#3c4043] px-4 py-2 text-xl tracking-[5px]">
+              💖😀🤧🤒
+            </div>
+          </motion.div>
           <BottomBar />
         </section>
       )}

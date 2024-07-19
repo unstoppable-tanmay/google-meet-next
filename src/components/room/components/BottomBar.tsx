@@ -37,37 +37,41 @@ const BottomBar = () => {
   const session = useSession();
   const [meetDetails, setMeetDetails] = useRecoilState(meetDetailsAtom);
   return (
-    <div className="wrapper flex flex-col">
+    <div className="wrapper flex flex-col bg-[#202124] z-20">
       <div className="emojies"></div>
       <nav className="w-full flex items-center justify-between px-6 pb-5 text-white/80">
         <div className="meetname font-semibold tracking-wide flex-grow basis-1 text-ellipsis line-clamp-1">
           abc-defg-hij
         </div>
         <div className="middlebuttons flex gap-2 text-xl">
-          <SmallButtons
-            on={setting.microphoneState}
-            onClick={(e) => {
-              setSettings((prev) => ({
-                ...prev,
-                microphoneState: !setting.microphoneState,
-              }));
-            }}
-            open
-          >
-            {setting.microphoneState ? <BiMicrophone /> : <BiMicrophoneOff />}
-          </SmallButtons>
-          <SmallButtons
-            on={setting.cameraState}
-            onClick={(e) => {
-              setSettings((prev) => ({
-                ...prev,
-                cameraState: !setting.cameraState,
-              }));
-            }}
-            open
-          >
-            {setting.cameraState ? <BiVideo /> : <BiVideoOff />}
-          </SmallButtons>
+          {meetDetails?.settings.turnOnMic && (
+            <SmallButtons
+              on={setting.microphoneState}
+              onClick={(e) => {
+                setSettings((prev) => ({
+                  ...prev,
+                  microphoneState: !setting.microphoneState,
+                }));
+              }}
+              open
+            >
+              {setting.microphoneState ? <BiMicrophone /> : <BiMicrophoneOff />}
+            </SmallButtons>
+          )}
+          {meetDetails?.settings.turnOnVideo && (
+            <SmallButtons
+              on={setting.cameraState}
+              onClick={(e) => {
+                setSettings((prev) => ({
+                  ...prev,
+                  cameraState: !setting.cameraState,
+                }));
+              }}
+              open
+            >
+              {setting.cameraState ? <BiVideo /> : <BiVideoOff />}
+            </SmallButtons>
+          )}
           <SmallButtons
             on={setting.caption}
             onColor="#87b3f8"
@@ -80,31 +84,35 @@ const BottomBar = () => {
           >
             <FaRegClosedCaptioning />
           </SmallButtons>
-          <SmallButtons
-            on={setting.emojies}
-            onColor="#87b3f8"
-            onClick={(e) => {
-              setSettings((prev) => ({
-                ...prev,
-                emojies: !setting.emojies,
-              }));
-            }}
-          >
-            <MdOutlineEmojiEmotions />
-          </SmallButtons>
-          <SmallButtons
-            on={setting.screenState}
-            onColor="#87b3f8"
-            onClick={(e) => {
-              setSettings((prev) => ({
-                ...prev,
-                screenState: !setting.screenState,
-              }));
-            }}
-          >
-            <LuScreenShare />
-            {/* <LuScreenShareOff/> */}
-          </SmallButtons>
+          {meetDetails?.settings.sendReaction && (
+            <SmallButtons
+              on={setting.emojies}
+              onColor="#87b3f8"
+              onClick={(e) => {
+                setSettings((prev) => ({
+                  ...prev,
+                  emojies: !setting.emojies,
+                }));
+              }}
+            >
+              <MdOutlineEmojiEmotions />
+            </SmallButtons>
+          )}
+          {meetDetails?.settings.shareScreen && (
+            <SmallButtons
+              on={setting.screenState}
+              onColor="#87b3f8"
+              onClick={(e) => {
+                setSettings((prev) => ({
+                  ...prev,
+                  screenState: !setting.screenState,
+                }));
+              }}
+            >
+              <LuScreenShare />
+              {/* <LuScreenShareOff/> */}
+            </SmallButtons>
+          )}
           <SmallButtons
             on={raiseHand}
             onClick={(e) => setRaiseHand(!raiseHand)}
@@ -112,7 +120,7 @@ const BottomBar = () => {
           >
             <FaRegHandPaper />
           </SmallButtons>
-            <Menu/>
+          <Menu />
           <SmallButtons
             on
             onClick={(e) => {
@@ -167,7 +175,7 @@ const BottomBar = () => {
               }}
             />
           )}
-          {setting.message ? (
+          {meetDetails?.settings.sendChatMessage && setting.message ? (
             <MdMessage
               className="cursor-pointer text-[#a8c7fa]"
               onClick={(e) => {
@@ -212,28 +220,28 @@ const BottomBar = () => {
             />
           )}
           {meetDetails?.admin.email === session.data?.user?.email &&
-          setting.setting ? (
-            <MdLockPerson
-              className="cursor-pointer text-[#a8c7fa]"
-              onClick={(e) => {
-                setSettings((prev) => ({ ...prev, setting: false }));
-              }}
-            />
-          ) : (
-            <MdOutlineLockPerson
-              className="cursor-pointer"
-              onClick={(e) => {
-                setSettings((prev) => ({
-                  ...prev,
-                  info: false,
-                  users: false,
-                  message: false,
-                  activities: false,
-                  setting: true,
-                }));
-              }}
-            />
-          )}
+            (setting.setting ? (
+              <MdLockPerson
+                className="cursor-pointer text-[#a8c7fa]"
+                onClick={(e) => {
+                  setSettings((prev) => ({ ...prev, setting: false }));
+                }}
+              />
+            ) : (
+              <MdOutlineLockPerson
+                className="cursor-pointer"
+                onClick={(e) => {
+                  setSettings((prev) => ({
+                    ...prev,
+                    info: false,
+                    users: false,
+                    message: false,
+                    activities: false,
+                    setting: true,
+                  }));
+                }}
+              />
+            ))}
         </div>
       </nav>
     </div>

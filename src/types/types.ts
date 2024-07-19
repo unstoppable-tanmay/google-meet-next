@@ -23,6 +23,7 @@ export interface ServerResponse<T> {
 }
 
 export type RoomSettings = {
+  hostManagement: boolean;
   shareScreen: boolean;
   sendChatMessage: boolean;
   sendReaction: boolean;
