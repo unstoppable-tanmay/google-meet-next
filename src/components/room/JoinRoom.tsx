@@ -143,6 +143,7 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
       },
       (data: boolean | null) => {
         console.log(data);
+        setRoomStateLoading(false);
         data == null
           ? toast("You are denied", {
               hideProgressBar: true,
@@ -158,7 +159,6 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
             });
       }
     );
-    setRoomStateLoading(false);
   };
   const askToPresent = () => {
     toast("not implemented yet", {
@@ -446,43 +446,51 @@ const JoinRoom = ({ roomId }: { roomId: string }) => {
                   )}
                 </>
               ) : (
-                <>
-                  <div
-                    className="joinnow cursor-pointer px-6 py-3.5 rounded-full duration-200 bg-blue-500 text-white shadow-lg hover:bg-blue-600"
-                    onClick={askToJoin}
-                  >
-                    Ask To Join
-                  </div>
-                  <div
-                    className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]"
-                    onClick={askToPresent}
-                  >
-                    <MdOutlinePresentToAll className="text-2xl" />
-                    Present
-                  </div>
-                </>
+                !room?.settings.hostMustJoinBeforeAll && (
+                  <>
+                    <div
+                      className="joinnow cursor-pointer px-6 py-3.5 rounded-full duration-200 bg-blue-500 text-white shadow-lg hover:bg-blue-600"
+                      onClick={askToJoin}
+                    >
+                      Ask To Join
+                    </div>
+                    <div
+                      className="joinnow cursor-pointer px-6 py-3 rounded-full flex gap-2 items-center bg-gray-50 border-[.7px] border-black/10 text-blue-500 shadow-md duration-200 hover:bg-[#dfebf6]"
+                      onClick={askToPresent}
+                    >
+                      <MdOutlinePresentToAll className="text-2xl" />
+                      Present
+                    </div>
+                  </>
+                )
               )}
             </div>
-            <div className="desc text-sm font-semibold text-black/60 mb-5">
-              Other joining options
-            </div>
-            {room?.admin.email === session.data?.user?.email &&
-              room?.peers.find((e) => e.email == session.data?.user?.email) && (
+            {!room?.settings.hostMustJoinBeforeAll && (
+              <>
+                <div className="desc text-sm font-semibold text-black/60 mb-5">
+                  Other joining options
+                </div>
+                {room?.admin.email === session.data?.user?.email &&
+                  room?.peers.find(
+                    (e) => e.email == session.data?.user?.email
+                  ) && (
+                    <div
+                      className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2 pb-3"
+                      onClick={joinHereAlso}
+                    >
+                      <MdOutlinePhonelink className="text-2xl" />
+                      Join Here Also
+                    </div>
+                  )}
                 <div
-                  className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2 pb-3"
-                  onClick={joinHereAlso}
+                  className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2"
+                  onClick={companionMode}
                 >
                   <MdOutlinePhonelink className="text-2xl" />
-                  Join Here Also
+                  Use Companion Mode
                 </div>
-              )}
-            <div
-              className="joiningOpt cursor-pointer text-blue-500 text-sm flex items-center gap-2"
-              onClick={companionMode}
-            >
-              <MdOutlinePhonelink className="text-2xl" />
-              Use Companion Mode
-            </div>
+              </>
+            )}
           </div>
         )}
       </div>

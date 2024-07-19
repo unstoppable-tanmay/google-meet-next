@@ -29,7 +29,10 @@ const SmallButtons = ({
 
       <motion.button
         transition={{ duration: 0.1 }}
-        style={{ background: on ? onColor : "rgb(255 255 255 / 0.15)" }}
+        style={{
+          background: on ? onColor : "rgb(255 255 255 / 0.15)",
+          color: on ? "#1f1e23" : "white",
+        }}
         whileHover={{
           background: on ? onColor + "" : "rgb(255 255 255 / 0.25)",
         }}
@@ -42,7 +45,10 @@ const SmallButtons = ({
   ) : (
     <motion.button
       transition={{ duration: 0.1 }}
-      style={{ background: on ? onColor : "rgb(255 255 255 / 0.15)" }}
+      style={{
+        background: on ? onColor : "rgb(255 255 255 / 0.15)",
+        color: on ? "#1f1e23" : "white",
+      }}
       whileHover={{ background: on ? onColor + "" : "rgb(255 255 255 / 0.25)" }}
       className={`text-xl font-bold p-[.7rem] rounded-full duration-200 bg-white/15 hover:bg-white/25 outline-none`}
       onClick={onClick}

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
 import { useRecoilState } from "recoil";
 
-const Sound = () => {
+const Sound = ({ stream }: { stream?: MediaStream }) => {
   const [setting, setSetting] = useRecoilState(settings);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -19,17 +19,12 @@ const Sound = () => {
   };
 
   useEffect(() => {
-    let stream: MediaStream;
     let audioContext: AudioContext;
     let analyser: AnalyserNode;
     let microphone: MediaStreamAudioSourceNode;
     let interval: NodeJS.Timeout;
 
-    const getVolume = async () => {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: { deviceId: setting.microphone?.deviceId },
-      });
-
+    const getVolume = async (stream: MediaStream) => {
       audioContext = new AudioContext();
       analyser = audioContext.createAnalyser();
       microphone = audioContext.createMediaStreamSource(stream);
@@ -54,24 +49,15 @@ const Sound = () => {
       return stream;
     };
 
-    getVolume();
+    stream && getVolume(stream);
 
     return () => {
       audioContext && audioContext.close();
       stream && stream.getTracks().forEach((track) => track.stop());
       analyser && analyser.disconnect();
       interval && clearInterval(interval);
-
-      const closeAll = async () => {
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: { deviceId: setting.microphone?.deviceId },
-        });
-
-        stream.getTracks().forEach((track) => track.stop());
-      };
-      closeAll();
     };
-  }, [setting.microphone]);
+  }, [setting.microphone, stream]);
 
   return (
     <div className="sound rounded-full bg-blue-500 flex w-7 aspect-square items-center justify-center gap-1">

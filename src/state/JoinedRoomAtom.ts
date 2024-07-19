@@ -7,3 +7,8 @@ export const meetDetailsAtom = atom<MeetType | null>({
   key: "meetDetailsAtom",
   default: null,
 });
+
+export const messagesAtom = atom<{ message: string; user: string }[]>({
+  key: "messagesAtom",
+  default: [],
+});
