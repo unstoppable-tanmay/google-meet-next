@@ -8,6 +8,7 @@ import { AiOutlineSend } from "react-icons/ai";
 import { useSocket } from "@/provider/SocketContext";
 import { useSession } from "next-auth/react";
 import { messagesAtom } from "@/state/JoinedRoomAtom";
+import { Avatar } from "@nextui-org/react";
 
 const Message = ({ room }: { room: string }) => {
   const [setting, setSettings] = useRecoilState(settings);
@@ -39,11 +40,13 @@ const Message = ({ room }: { room: string }) => {
       <div className="notice m-3 text-xs font-medium text-gray-600/80 text-center bg-[#f2f3f5] rounded-md p-3">
         {`Unless they're pinned, messages can only be seen by people in the call when the message is sent. All messages are deleted when the call ends.`}
       </div>
-      <div className="flex-1 flex flex-col overflow-y-scroll px-4 basis-0 no-scrollbar">
+      <div className="flex-1 flex flex-col overflow-y-scroll px-4 basis-0 no-scrollbar gap-2">
         {messages.map((message) => (
-          <div key={message.message} className="flex flex-col gap-1">
-            <div className="user font-semibold text-sm">{message.user}</div>
-            <div className="user text-black/70">{message.message}</div>
+          <div key={message.message} className="flex flex-col">
+            <div className="user flex items-center gap-0.5">
+              <div className="user font-semibold text-xs">{message.user}</div>
+            </div>
+            <div className="user text-black/70 text-sm">{message.message}</div>
           </div>
         ))}
       </div>

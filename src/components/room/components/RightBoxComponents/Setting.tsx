@@ -223,6 +223,7 @@ const Setting = () => {
         <RadioGroup
           color="warning"
           className="mt-4 ml-4"
+          value={meetDetails?.settings.access}
           onValueChange={(e) => {
             setMeetDetails((prev) => ({
               ...prev!,
