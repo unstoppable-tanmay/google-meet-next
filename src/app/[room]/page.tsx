@@ -34,6 +34,8 @@ const Page = ({ params }: { params: { room: string } }) => {
       setLoadingMessage("Invalid Room Code");
       setJoin("wrongcode");
     } else {
+      // using on testing time
+      // setPageLoading(false)
       checkRoom(room);
     }
   }, []);
