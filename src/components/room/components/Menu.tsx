@@ -14,8 +14,12 @@ const Menu = () => {
           <BsThreeDotsVertical />
         </div>
       </PopoverTrigger>
-      <PopoverContent className="shadow-lg max-h-[50vh] rounded-md bg-gray-700 z-[1100] flex flex-col overflow-y-scroll no-scrollbar px-0">
-        <>asfasfas</>
+      <PopoverContent className="shadow-lg max-h-[50vh] rounded-md bg-[#181b20] p-3 text-white z-[1100] flex flex-col overflow-y-scroll no-scrollbar px-0">
+        <>
+        <div className="whiteBoard w-full flex items-center gap-4">
+          
+        </div>
+        </>
       </PopoverContent>
     </Popover>
   );
