@@ -1,7 +1,7 @@
 import React from "react";
 import { IoClose } from "react-icons/io5";
 import { usePathname } from "next/navigation";
-import { MdContentCopy, MdDone } from "react-icons/md";
+import { MdDone } from "react-icons/md";
 import { settings } from "@/state/atom";
 import { useRecoilState } from "recoil";
 import { Radio, RadioGroup, Switch } from "@nextui-org/react";
@@ -223,6 +223,7 @@ const Setting = () => {
         <RadioGroup
           color="warning"
           className="mt-4 ml-4"
+          value={meetDetails?.settings.access}
           onValueChange={(e) => {
             setMeetDetails((prev) => ({
               ...prev!,

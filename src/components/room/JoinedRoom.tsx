@@ -32,6 +32,7 @@ import Users from "./components/RightBoxComponents/Users";
 import Activities from "./components/RightBoxComponents/Activities";
 import Message from "./components/RightBoxComponents/Message";
 import Setting from "./components/RightBoxComponents/Setting";
+import Emojies from "../common/Emojies";
 
 const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
@@ -312,11 +313,9 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
                 ? { height: "50px", opacity: 1 }
                 : { height: "0px", opacity: 0 }
             }
-            className="emojies flex items-center justify-center my-1 z-10"
+            className="emojies flex items-center justify-center my-1 z-10 gap-4 pb-3 group"
           >
-            <div className="emojies rounded-full bg-[#3c4043] px-4 py-2 text-xl tracking-[5px]">
-              💖😀🤧🤒
-            </div>
+            <Emojies/>
           </motion.div>
           <BottomBar />
         </section>

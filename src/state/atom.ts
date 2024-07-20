@@ -35,7 +35,7 @@ export const settings = atom<SettingType>({
     users: false,
     message: false,
     activities: false,
-    setting: false
+    setting: false,
   },
   // effects_UNSTABLE: [persistAtom],
 });
@@ -47,7 +47,7 @@ export const rightBoxAtom = atom<boolean>({
 
 export const joined = atom<"joined" | "joining" | "leaved" | "wrongcode">({
   key: "joined",
-  default: "joining",
+  default: "joined",
 });
 
 export const tracksAtom = atom<UserSocketType[]>({

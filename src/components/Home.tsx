@@ -16,7 +16,7 @@ import { motion } from "framer-motion";
 import { Popover, PopoverContent, PopoverTrigger } from "@nextui-org/popover";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { ServerResponse } from "@/types/types";
+import { RoomSettings, ServerResponse } from "@/types/types";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
 
@@ -66,9 +66,10 @@ const Home = () => {
               sendReaction: true,
               turnOnMic: true,
               turnOnVideo: true,
-              hostMustJoinBeforeAll: true,
+              hostMustJoinBeforeAll: false,
               access: "trusted",
-            },
+              hostManagement: false,
+            } as RoomSettings,
           }
         );
         const data: ServerResponse<{ id: string }> = res.data;
