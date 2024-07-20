@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { usePathname } from "next/navigation";
-import { MdContentCopy } from "react-icons/md";
 import { settings } from "@/state/atom";
 import { useRecoilState } from "recoil";
 import { AiOutlineSend } from "react-icons/ai";
 import { useSocket } from "@/provider/SocketContext";
 import { useSession } from "next-auth/react";
-import { messagesAtom } from "@/state/JoinedRoomAtom";
-import { Avatar } from "@nextui-org/react";
+import { meetDetailsAtom, messagesAtom } from "@/state/JoinedRoomAtom";
+import { Switch } from "@nextui-org/react";
+import { MdDone } from "react-icons/md";
 
 const Message = ({ room }: { room: string }) => {
   const [setting, setSettings] = useRecoilState(settings);
@@ -16,6 +15,7 @@ const Message = ({ room }: { room: string }) => {
   const session = useSession();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useRecoilState(messagesAtom);
+  const [meetDetails, setMeetDetails] = useRecoilState(meetDetailsAtom);
 
   const sendMessage = () => {
     socket?.emit("message", {
@@ -36,6 +36,27 @@ const Message = ({ room }: { room: string }) => {
             setSettings((prev) => ({ ...prev, message: false }));
           }}
         />
+      </div>
+      <div className="notice m-3 text-xs font-medium text-gray-600/80 text-center bg-[#f2f3f5] rounded-md p-3 flex items-center justify-between">
+        {`Let everyone send messages`}
+        <Switch
+          // isDisabled={!meetDetails?.settings.hostManagement}
+          onValueChange={(e) => {
+            setMeetDetails((prev) => ({
+              ...prev!,
+              settings: { ...prev!.settings, sendChatMessage: e },
+            }));
+          }}
+          size="sm"
+          color="default"
+          thumbIcon={({ isSelected, className }) =>
+            isSelected ? (
+              <MdDone className={className} />
+            ) : (
+              <IoClose className={className} />
+            )
+          }
+        ></Switch>
       </div>
       <div className="notice m-3 text-xs font-medium text-gray-600/80 text-center bg-[#f2f3f5] rounded-md p-3">
         {`Unless they're pinned, messages can only be seen by people in the call when the message is sent. All messages are deleted when the call ends.`}

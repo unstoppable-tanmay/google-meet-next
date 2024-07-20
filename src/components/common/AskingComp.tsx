@@ -11,13 +11,15 @@ type Props = {
   onDeny: () => void;
 };
 
-const AskingComp = ({ user,onAdmit, onDeny }: Props) => {
+const AskingComp = ({ user, onAdmit, onDeny }: Props) => {
   return (
     <Modal
       className="w-max justify-end"
       classNames={{
-        wrapper: "justify-end",
+        wrapper: "justify-end pointer-events-none ",
         backdrop: "pointer-events-none hidden",
+        body: "asd",
+        base: "pointer-events-auto",
       }}
       isOpen={true}
       hideCloseButton={true}
@@ -25,28 +27,28 @@ const AskingComp = ({ user,onAdmit, onDeny }: Props) => {
     >
       <ModalContent>
         <>
-          <ModalBody className="bg-[#404145] rounded-lg p-8 px-10 flex text-white w-max gap-3">
-            <div className="heading font-semibold">
+          <ModalBody className="bg-[#404145] rounded-lg p-6 px-7 flex text-white w-max gap-3">
+            <div className="heading text-sm font-semibold text-white/70">
               Someone wants to join this call
             </div>
             <div className="user flex items-center justify-start gap-3">
               <Avatar
+                size="sm"
                 className="border-[2px] border-[#d9dbdb]"
                 src={user?.image ?? ""}
               />
-              <div className="name font-medium text-sm">{user?.name}</div>
+              <div className="name font-medium text-xs">
+                {user?.name ?? "Unknown"}
+              </div>
             </div>
-            <div className="buttons flex items-center justify-end gap-5">
+            <div className="buttons flex items-center text-sm justify-end gap-5">
               <button
                 className="font-semibold text-[#87a8d3]"
                 onClick={onAdmit}
               >
                 Admit
               </button>
-              <button
-                className="font-semibold text-[#87a8d3]"
-                onClick={onDeny}
-              >
+              <button className="font-semibold text-[#87a8d3]" onClick={onDeny}>
                 Deny
               </button>
             </div>
