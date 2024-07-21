@@ -93,7 +93,7 @@ const VideoArea = () => {
           </div>
 
           <div className="sound absolute top-3 right-3 z-30">
-            <Sound stream={audioStream ?? undefined} />
+            {/* <Sound stream={audioStream ?? undefined} /> */}
           </div>
           <video
             autoPlay
@@ -102,7 +102,7 @@ const VideoArea = () => {
             ref={myVideoElement}
           ></video>
           {!setting.cameraState && (
-            <div className="userImage w-[clamp(40px,60px,80px)] aspect-square rounded-full bg-white/20 z-10">
+            <div className="userImage w-[clamp(30px,80px,150px)] aspect-square rounded-full bg-white/20 z-10">
               {session.data?.user?.image ? (
                 <img
                   src={session.data?.user?.image}
@@ -230,7 +230,7 @@ const User = ({ user }: { user: PeerDetailsType }) => {
       </div>
 
       <div className="sound absolute top-3 right-3 z-30">
-        <Sound
+        {/* <Sound
           stream={
             tracks.find((e) => e.socketId == user.socketId && e.type == "audio")
               ? new MediaStream([
@@ -241,7 +241,7 @@ const User = ({ user }: { user: PeerDetailsType }) => {
                 ])
               : undefined
           }
-        />
+        /> */}
       </div>
       <video
         autoPlay
@@ -288,7 +288,7 @@ const Screen = ({ user }: { user: PeerDetailsType }) => {
   return (
     user.screen && (
       <>
-        <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden">
+        <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[clamp(100px,300px,400px)] h-[clamp(70px,210px,280px)] overflow-hidden">
           <video
             autoPlay
             className="w-full h-full object-cover"
@@ -296,7 +296,7 @@ const Screen = ({ user }: { user: PeerDetailsType }) => {
             ref={screenElement}
           ></video>
           {!user.screen && (
-            <div className="userImage w-[clamp(40px,60px,80px)] flex items-1enter justify-center text-white/60 aspect-square rounded-full bg-white/20">
+            <div className="userImage w-[clamp(30px,80px,150px)] flex items-1enter justify-center text-white/60 aspect-square rounded-full bg-white/20">
               {user.image ? (
                 <img
                   src={user.image}
