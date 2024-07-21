@@ -3,7 +3,7 @@ import { useMediaStream } from "@/provider/MediaProvider";
 import { useSocket } from "@/provider/SocketContext";
 import { settings, tracksAtom } from "@/state/atom";
 import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
-import { PeerDetailsType, UserSocketType } from "@/types/types";
+import { PeerDetailsType } from "@/types/types";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useRef } from "react";
@@ -47,6 +47,7 @@ const VideoArea = () => {
       className="flex-1 h-full p-1 rounded-lg flex items-center justify-center"
     >
       <div className="video-section overflow-hidden w-full h-full flex items-center justify-center gap-6">
+        {/* You */}
         <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden relative">
           <div className="overlay z-30 w-full h-full absolute p-3 flex flex-col justify-end">
             <div className="name font-medium text-white/60 text-sm self-start">
@@ -73,6 +74,8 @@ const VideoArea = () => {
             </div>
           )}
         </div>
+
+        {/* Your Screen */}
         {setting.screenState && screenStream && (
           <div className="rounded-xl bg-[#3c4043] flex items-center justify-center w-[300px] aspect-square overflow-hidden relative">
             <div className="overlay z-30 w-full h-full absolute p-3 flex flex-col justify-end">
@@ -88,6 +91,8 @@ const VideoArea = () => {
             ></video>
           </div>
         )}
+
+        {/* Other Screen */}
         {meetDetails?.peers.map((user, index) => {
           return user.socketId != socket?.id ? (
             <Screen key={user.socketId} user={user} />
@@ -95,6 +100,8 @@ const VideoArea = () => {
             <></>
           );
         })}
+
+        {/* Other Users */}
         {meetDetails?.peers.map((user, index) => {
           return user.socketId != socket?.id ? (
             <User key={user.socketId} user={user} />
@@ -167,6 +174,7 @@ const User = ({ user }: { user: PeerDetailsType }) => {
     </div>
   );
 };
+
 const Screen = ({ user }: { user: PeerDetailsType }) => {
   const [tracks, setTracks] = useRecoilState(tracksAtom);
   const screenElement = useRef<HTMLVideoElement>(null);
