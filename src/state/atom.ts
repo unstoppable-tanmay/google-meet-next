@@ -47,7 +47,7 @@ export const rightBoxAtom = atom<boolean>({
 
 export const joined = atom<"joined" | "joining" | "leaved" | "wrongcode">({
   key: "joined",
-  default: "joined",
+  default: "joining",
 });
 
 export const tracksAtom = atom<UserSocketType[]>({

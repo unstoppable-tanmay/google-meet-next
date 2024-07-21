@@ -5,7 +5,18 @@ import { ReactNode } from "react";
 
 // using on testing time
 // {
-//   peers: [],
+//   peers: [
+//     {
+//       email: "iamunstoppableguy@gmail.com",
+//       name: "Tanmay Kumar",
+//       image: "",
+//       audio: true,
+//       hand: false,
+//       screen: false,
+//       video: true,
+//       socketId: "asfasfasf",
+//     },
+//   ],
 //   admin: {
 //     email: "iamunstoppableguy@gmail.com",
 //     name: "Tanmay Kumar",

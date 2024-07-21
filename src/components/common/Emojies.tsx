@@ -4,9 +4,14 @@ import { motion } from "framer-motion";
 import React from "react";
 import { useRecoilState } from "recoil";
 import { Popover, PopoverContent, PopoverTrigger } from "@nextui-org/popover";
+import { useSocket } from "@/provider/SocketContext";
+import { PeerDetailsType } from "@/types/types";
+import { useSession } from "next-auth/react";
 
-const Emojies = () => {
+const Emojies = ({ room }: { room: string }) => {
   const [emojiesColor, setEmojiesColor] = useRecoilState(emojiesColorAtom);
+  const { socket } = useSocket();
+  const session = useSession();
   const map = [
     { color: "#ffca28", value: "" },
     { color: "#70534a", value: "_dark-skin-tone" },
@@ -15,6 +20,15 @@ const Emojies = () => {
     { color: "#e0bb95", value: "_medium-light-skin-tone" },
     { color: "#f9ddbd", value: "_light-skin-tone" },
   ];
+
+  const sendEmojies = (emoji: string) => {
+    socket?.emit("emoji", {
+      user: session.data?.user,
+      roomName: room,
+      emoji,
+    });
+  };
+
   return (
     <>
       <motion.div
@@ -27,52 +41,61 @@ const Emojies = () => {
           className="w-7 aspect-square hover:scale-125 duration-200 cursor-pointer"
           src="/emojies/sparkling-heart.png"
           alt=""
+          onClick={(e) => sendEmojies("sparkling-heart")}
         />
         <img
           className="w-7 aspect-square hover:scale-125 duration-200 cursor-pointer"
           src={`/emojies/thumbs-up${emojiesColor}.png`}
           alt=""
+          onClick={(e) => sendEmojies(`thumbs-up${emojiesColor}`)}
         />
         <img
           className="w-7 aspect-square hover:scale-125 duration-200 cursor-pointer"
           src="/emojies/party-popper.png"
           alt=""
+          onClick={(e) => sendEmojies("party-popper")}
         />
         <img
           className="w-7 aspect-square hover:scale-125 duration-200 cursor-pointer"
           src={`/emojies/clapping-hands${emojiesColor}.png`}
           alt=""
+          onClick={(e) => sendEmojies(`clapping-hands${emojiesColor}`)}
         />
         <img
           className="w-7 aspect-square hover:scale-125 duration-200 cursor-pointer"
           src="/emojies/face-with-tears-of-joy.png"
           alt=""
+          onClick={(e) => sendEmojies("face-with-tears-of-joy")}
         />
         <img
           className="w-7 aspect-square hover:scale-125 duration-200 cursor-pointer"
           src="/emojies/face-with-open-mouth.png"
           alt=""
+          onClick={(e) => sendEmojies("face-with-open-mouth")}
         />
         <img
           className="w-7 aspect-square hover:scale-125 duration-200 cursor-pointer"
           src="/emojies/crying-face.png"
           alt=""
+          onClick={(e) => sendEmojies("crying-face")}
         />
         <img
           className="w-7 aspect-square hover:scale-125 duration-200 cursor-pointer"
           src="/emojies/thinking-face.png"
           alt=""
+          onClick={(e) => sendEmojies("thinking-face")}
         />
         <img
           className="w-7 aspect-square hover:scale-125 duration-200 cursor-pointer"
           src={`/emojies/thumbs-down${emojiesColor}.png`}
           alt=""
+          onClick={(e) => sendEmojies(`thumbs-down${emojiesColor}`)}
         />
       </motion.div>
 
       <Popover placement="top-start">
         <PopoverTrigger>
-          <div className="select w-8 aspect-square rounded-full border-2 border-white/30 p-[2.5px] -mr-6 opacity-0 group-hover:opacity-100 duration-300 cursor-pointer">
+          <div className="select w-8 aspect-square rounded-full border-2 border-white/30 p-[2.5px] -mr-6 opacity-0 group-hover:opacity-100 duration-300 cursor-pointer delay-300">
             <div className="color bg-[#ffca28] w-full h-full rounded-full"></div>
           </div>
         </PopoverTrigger>
