@@ -5,7 +5,21 @@ import { ReactNode } from "react";
 
 // using on testing time
 // {
-//   peers: [],
+//   peers: [
+//     {
+//       email: "iamunstoppableguy@gmail.com",
+//       name: "Tanmay Kumar",
+//       image: "",
+//       audio: true,
+//       hand: false,
+//       screen: false,
+//       video: true,
+//       socketId: "asfasfasf",
+//     },
+//   ],
+//   allowedPeers: [],
+//   askingpeers: [],
+//   raisedPeers: [],
 //   admin: {
 //     email: "iamunstoppableguy@gmail.com",
 //     name: "Tanmay Kumar",
@@ -23,7 +37,7 @@ import { ReactNode } from "react";
 //   },
 //   started: true,
 //   expire: 124444,
-// }
+// },
 
 export const meetDetailsAtom = atom<MeetType | null>({
   key: "meetDetailsAtom",

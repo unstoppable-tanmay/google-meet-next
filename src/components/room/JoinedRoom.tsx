@@ -33,6 +33,7 @@ import Activities from "./components/RightBoxComponents/Activities";
 import Message from "./components/RightBoxComponents/Message";
 import Setting from "./components/RightBoxComponents/Setting";
 import Emojies from "../common/Emojies";
+import { emojify } from "./components/Toasts/EmojiFy";
 
 const JoinedRoom = ({ roomId }: { roomId: string }) => {
   const session = useSession();
@@ -112,6 +113,21 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
           message: string;
         }) => {
           setMessages((prev) => [...prev, { message, user: user.name }]);
+        }
+      );
+
+      socket.on(
+        "emoji",
+        ({
+          user,
+          roomName,
+          emoji,
+        }: {
+          user: PeerDetailsType;
+          roomName: string;
+          emoji: string;
+        }) => {
+          emojify(emoji, user.name);
         }
       );
 
@@ -315,9 +331,9 @@ const JoinedRoom = ({ roomId }: { roomId: string }) => {
             }
             className="emojies flex items-center justify-center my-1 z-10 gap-4 pb-3 group"
           >
-            <Emojies/>
+            <Emojies room={roomId} />
           </motion.div>
-          <BottomBar />
+          <BottomBar room={roomId} />
         </section>
       )}
     </AnimatePresence>

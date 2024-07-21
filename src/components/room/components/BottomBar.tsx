@@ -1,38 +1,36 @@
 import React, { useState } from "react";
-import {
-  BiMicrophone,
-  BiMicrophoneOff,
-  BiVideo,
-  BiVideoOff,
-} from "react-icons/bi";
 import { useRecoilState } from "recoil";
 import { joined, settings } from "@/state/atom";
-import { FaPhone, FaRegClosedCaptioning } from "react-icons/fa6";
-import SmallButtons from "@/components/common/SmallButtons";
-import { MdOutlineEmojiEmotions } from "react-icons/md";
-import { LuScreenShare, LuScreenShareOff } from "react-icons/lu";
-import { FaRegHandPaper } from "react-icons/fa";
 import { useSession } from "next-auth/react";
 import { meetDetailsAtom } from "@/state/JoinedRoomAtom";
 import Menu from "./Menu";
 import BottomBarButtonsOpen from "@/components/common/BottomBarButtonsOpen";
 import BottomBarButtons from "@/components/common/BottomBarButtons";
+import EmojiFy from "./Toasts/EmojiFy";
+import { useRouter } from "next/navigation";
 
 // 5f6368  -  icon color
 
-const BottomBar = () => {
+const BottomBar = ({ room }: { room: string }) => {
   const [setting, setSettings] = useRecoilState(settings);
   const [raiseHand, setRaiseHand] = useState(false);
   const [join, setJoin] = useRecoilState(joined);
   const session = useSession();
   const [meetDetails, setMeetDetails] = useRecoilState(meetDetailsAtom);
+  const router = useRouter();
+
   return (
-    <div className="wrapper flex flex-col bg-[#202124] z-20">
-      <div className="emojies"></div>
-      <nav className="w-full flex items-center justify-between px-6 pb-5 text-white/80">
-        <div className="meetname font-semibold tracking-wide flex-grow basis-1 text-ellipsis line-clamp-1">
-          abc-defg-hij
+    <div className="wrapper flex flex-col z-20">
+      <nav className="w-full flex items-center justify-between px-6 pb-4 text-white/80 relative bg-[#202124]">
+        {/* Emoji Generate Box */}
+        <EmojiFy />
+
+        {/* Meet Name */}
+        <div className="meetname font-semibold tracking-wide flex-grow basis-1 text-ellipsis line-clamp-1 select-none">
+          {room}
         </div>
+
+        {/* Middle Buttons */}
         <div className="middlebuttons flex gap-2 text-xl">
           {/* Mic */}
           {meetDetails?.settings.turnOnMic && (
@@ -242,6 +240,9 @@ const BottomBar = () => {
           <button
             onClick={(e) => {
               setJoin("leaved");
+              setTimeout(() => {
+                router.replace("/");
+              }, 3000);
             }}
             className="outline-none border-none p-3 px-5 rounded-full bg-[#d8392e]"
           >
