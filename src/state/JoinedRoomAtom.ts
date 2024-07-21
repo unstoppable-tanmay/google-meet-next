@@ -17,6 +17,9 @@ import { ReactNode } from "react";
 //       socketId: "asfasfasf",
 //     },
 //   ],
+//   allowedPeers: [],
+//   askingpeers: [],
+//   raisedPeers: [],
 //   admin: {
 //     email: "iamunstoppableguy@gmail.com",
 //     name: "Tanmay Kumar",
@@ -34,7 +37,7 @@ import { ReactNode } from "react";
 //   },
 //   started: true,
 //   expire: 124444,
-// }
+// },
 
 export const meetDetailsAtom = atom<MeetType | null>({
   key: "meetDetailsAtom",

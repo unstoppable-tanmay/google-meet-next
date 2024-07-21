@@ -55,6 +55,9 @@ export type AdminType = {
 
 export type MeetType = {
   peers: PeerDetailsType[];
+  raisedPeers: PeerDetailsType[];
+  askingpeers: PeerDetailsType[];
+  allowedPeers: PeerDetailsType[];
   admin: AdminType;
   settings: RoomSettings;
   started: boolean;
@@ -73,10 +76,10 @@ export type SettingType = {
   screenState: boolean;
   caption: boolean;
   emojies: boolean;
-  
-  info: boolean,
-  users: boolean,
-  message: boolean,
-  activities: boolean,
-  setting: boolean
+
+  info: boolean;
+  users: boolean;
+  message: boolean;
+  activities: boolean;
+  setting: boolean;
 };

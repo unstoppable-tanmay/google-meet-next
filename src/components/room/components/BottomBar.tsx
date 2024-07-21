@@ -7,6 +7,7 @@ import Menu from "./Menu";
 import BottomBarButtonsOpen from "@/components/common/BottomBarButtonsOpen";
 import BottomBarButtons from "@/components/common/BottomBarButtons";
 import EmojiFy from "./Toasts/EmojiFy";
+import { useRouter } from "next/navigation";
 
 // 5f6368  -  icon color
 
@@ -16,6 +17,7 @@ const BottomBar = ({ room }: { room: string }) => {
   const [join, setJoin] = useRecoilState(joined);
   const session = useSession();
   const [meetDetails, setMeetDetails] = useRecoilState(meetDetailsAtom);
+  const router = useRouter();
 
   return (
     <div className="wrapper flex flex-col z-20">
@@ -24,7 +26,7 @@ const BottomBar = ({ room }: { room: string }) => {
         <EmojiFy />
 
         {/* Meet Name */}
-        <div className="meetname font-semibold tracking-wide flex-grow basis-1 text-ellipsis line-clamp-1">
+        <div className="meetname font-semibold tracking-wide flex-grow basis-1 text-ellipsis line-clamp-1 select-none">
           {room}
         </div>
 
@@ -238,6 +240,9 @@ const BottomBar = ({ room }: { room: string }) => {
           <button
             onClick={(e) => {
               setJoin("leaved");
+              setTimeout(() => {
+                router.replace("/");
+              }, 3000);
             }}
             className="outline-none border-none p-3 px-5 rounded-full bg-[#d8392e]"
           >

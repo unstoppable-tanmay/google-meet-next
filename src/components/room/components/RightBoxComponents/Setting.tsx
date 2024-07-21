@@ -75,6 +75,7 @@ const Setting = () => {
                 settings: { ...prev!.settings, shareScreen: e },
               }));
             }}
+            isSelected={meetDetails?.settings.shareScreen}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
@@ -98,6 +99,7 @@ const Setting = () => {
                 settings: { ...prev!.settings, sendChatMessage: e },
               }));
             }}
+            isSelected={meetDetails?.settings.sendChatMessage}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
@@ -119,6 +121,7 @@ const Setting = () => {
                 settings: { ...prev!.settings, sendReaction: e },
               }));
             }}
+            isSelected={meetDetails?.settings.sendReaction}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
@@ -142,6 +145,7 @@ const Setting = () => {
                 settings: { ...prev!.settings, turnOnMic: e },
               }));
             }}
+            isSelected={meetDetails?.settings.turnOnMic}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
@@ -169,6 +173,7 @@ const Setting = () => {
                 settings: { ...prev!.settings, turnOnVideo: e },
               }));
             }}
+            isSelected={meetDetails?.settings.turnOnVideo}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
@@ -208,6 +213,7 @@ const Setting = () => {
                 settings: { ...prev!.settings, hostMustJoinBeforeAll: e },
               }));
             }}
+            isSelected={meetDetails?.settings.hostMustJoinBeforeAll}
             size="md"
             color="default"
             thumbIcon={({ isSelected, className }) =>
